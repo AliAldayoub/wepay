@@ -10,7 +10,7 @@ app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 app.use(helmet());
 
-app.use('/api/v1/auth',authRoute);
+app.use('/api/v1.0/auth',authRoute);
 
 
 app.get('/',(req,res,next)=> {
@@ -21,3 +21,5 @@ app.get('/',(req,res,next)=> {
 app.listen(3000,()=>{
     console.log('heey again on 3000')
 })
+
+// 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
