@@ -6,4 +6,8 @@ const transactionController = require('../controllers/transaction');
 router.post('/depositRequest', authMiddleware.authenticateUser, transactionController.depositRequest);
 router.post('/withdrawRequest', authMiddleware.authenticateUser, transactionController.withdrawRequest);
 
+router.post('/transferMoney', authMiddleware.authenticateUser, transactionController.transferMoney);
+
+router.get('/getActions', authMiddleware.authenticateUser, transactionController.getTransactions);
+
 module.exports = router;
