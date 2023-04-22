@@ -31,8 +31,8 @@ userSchema.pre('save', async function(next) {
 	if (this.qrcode === undefined) {
 		do {
 			uniqueNumber = Math.floor(100000 + Math.random() * 900000);
-		} while (await User.findOne({ qrcode: uniqueNumber }));
-		this.qrcode = uniqueNumber;
+		} while (await User.findOne({ qrcode: uniqueNumber.toString() }));
+		this.qrcode = uniqueNumber.toString();
 	}
 	if (!user.isModified('password')) return next();
 
