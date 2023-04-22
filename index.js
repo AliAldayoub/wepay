@@ -8,6 +8,7 @@ const authRoute = require('./routes/auth');
 const storeRoute = require('./routes/store');
 const paymentRoute = require('./routes/payment');
 const transactionRoute = require('./routes/transaction');
+const dealersRoute = require('./routes/dealers');
 
 require('dotenv').config();
 app.use(cors());
@@ -19,6 +20,7 @@ app.use('/api/v1.0/auth', authRoute);
 app.use('/api/v1.0/store', storeRoute);
 app.use('/api/v1.0/payment', paymentRoute);
 app.use('/api/v1.0/transaction', transactionRoute);
+app.use('/api/v1.0/dealers', dealersRoute);
 
 app.get('/', (req, res, next) => {
 	res.send('hello from we pay');
@@ -34,4 +36,4 @@ app.listen(3000, () => {
 	console.log('heey again on 3000');
 });
 
-//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
+//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

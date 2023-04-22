@@ -12,7 +12,7 @@ const userSchema = new Schema(
 		imgURL: { type: String },
 		password: { type: String, required: true },
 		pin: { type: String, required: true },
-		role: { type: Number, enum: [ 0, 1, 2 ], default: 0 },
+		role: { type: Number, enum: [ 0, 1, 2, 3 ], default: 0 },
 		qrcode: { type: String, unique: true },
 		bemoBank: { type: String, unique: true, sparse: true },
 		syriatelCash: { type: String, unique: true, sparse: true },
