@@ -19,7 +19,8 @@ const depositRequestSchema = new Schema(
 				return this.processType === 'شحن-هرم';
 			}
 		},
-		user: { type: Schema.Types.ObjectId, ref: 'User', required: true }
+		user: { type: Schema.Types.ObjectId, ref: 'User', required: true },
+		activity: { type: Schema.Types.ObjectId, ref: 'Activity', required: true }
 	},
 	{
 		timestamps: true

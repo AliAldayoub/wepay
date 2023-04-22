@@ -13,7 +13,8 @@ const withdrawRequestSchema = new Schema(
 		},
 		amountValue: { type: Number, required: true },
 		reciverPhone: { type: String, required: true },
-		reciverCity: { type: String, required: true }
+		reciverCity: { type: String, required: true },
+		activity: { type: Schema.Types.ObjectId, ref: 'Activity', required: true }
 	},
 	{
 		timestamps: true

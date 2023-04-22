@@ -8,6 +8,19 @@ router.post('/withdrawRequest', authMiddleware.authenticateUser, transactionCont
 
 router.post('/transferMoney', authMiddleware.authenticateUser, transactionController.transferMoney);
 
-router.get('/getActions', authMiddleware.authenticateUser, transactionController.getTransactions);
+router.get('/getActions', authMiddleware.authenticateUser, transactionController.getActions);
 
+router.put(
+	'/depositResponse/:id',
+	authMiddleware.authenticateUser,
+	authMiddleware.authenticateAdmin,
+	transactionController.depositResponse
+);
+
+router.put(
+	'/withdrawResponse/:id',
+	authMiddleware.authenticateUser,
+	authMiddleware.authenticateAdmin,
+	transactionController.withdrawResponse
+);
 module.exports = router;

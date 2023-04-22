@@ -5,6 +5,7 @@ const DepositRequest = require('../models/depositRequest');
 const WithdrawRequest = require('../models/withdrawRequest');
 const multer = require('multer');
 const mongoose = require('mongoose');
+
 const bcrypt = require('bcryptjs');
 
 const depositStorage = multer.diskStorage({
@@ -31,19 +32,7 @@ exports.depositRequest = async (req, res, next) => {
 
 			const session = await DepositRequest.startSession();
 			session.startTransaction();
-
-			const depositRequest = new DepositRequest({
-				processType,
-				senderName,
-				senderPhone,
-				amountValue,
-				processNumber,
-				processImageUrl,
-				user: userId
-			});
 			const admin = await User.findOne({ role: 2 });
-
-			await depositRequest.save({ session });
 			const activity = new Activity({
 				sender: admin._id,
 				reciver: userId,
@@ -53,6 +42,19 @@ exports.depositRequest = async (req, res, next) => {
 				status: false
 			});
 			await activity.save();
+			const depositRequest = new DepositRequest({
+				processType,
+				senderName,
+				senderPhone,
+				amountValue,
+				processNumber,
+				processImageUrl,
+				user: userId,
+				activity: activity._id
+			});
+
+			await depositRequest.save({ session });
+
 			await session.commitTransaction();
 			session.endSession();
 
@@ -73,7 +75,7 @@ exports.withdrawRequest = async (req, res, next) => {
 	const { amountValue, processType, reciverName, reciverPhone, reciverCity } = req.body;
 	const userId = req.user._id;
 
-	const session = await mongoose.startSession();
+	let session = await mongoose.startSession();
 	session.startTransaction();
 
 	try {
@@ -86,23 +88,13 @@ exports.withdrawRequest = async (req, res, next) => {
 				message: 'عذراً رصيدك الحالي لا يكفي لإجراء هذه العملية'
 			});
 		}
-		user.balance -= amountValue;
+		user.Balance -= amountValue;
 		user.totalPayment += amountValue;
 		await user.save();
 
-		admin.balance += amountValue;
+		admin.Balance += amountValue;
 		admin.totalIncome += amountValue;
 		await admin.save();
-
-		const withdrawRequest = new WithdrawRequest({
-			amountValue,
-			processType,
-			reciverName,
-			reciverPhone,
-			reciverCity,
-			user: userId
-		});
-		await withdrawRequest.save();
 		const activity = new Activity({
 			sender: userId,
 			reciver: admin._id,
@@ -114,6 +106,17 @@ exports.withdrawRequest = async (req, res, next) => {
 			status: false
 		});
 		await activity.save();
+		const withdrawRequest = new WithdrawRequest({
+			amountValue,
+			processType,
+			reciverName,
+			reciverPhone,
+			reciverCity,
+			user: userId,
+			activity: activity._id
+		});
+		await withdrawRequest.save();
+
 		await session.commitTransaction();
 		session.endSession();
 
@@ -129,9 +132,11 @@ exports.withdrawRequest = async (req, res, next) => {
 		next(error);
 	}
 };
+
 exports.transferMoney = async (req, res, next) => {
+	let session;
 	try {
-		const session = await mongoose.startSession();
+		session = await mongoose.startSession();
 		session.startTransaction();
 
 		const userId = req.user._id;
@@ -207,13 +212,6 @@ exports.transferMoney = async (req, res, next) => {
 	}
 };
 
-exports.getTransactions = async (req, res, next) => {
-	try {
-	} catch (error) {
-		next(error);
-	}
-};
-
 exports.getActions = async (req, res, next) => {
 	try {
 		const userId = req.user._id;
@@ -240,6 +238,7 @@ exports.getActions = async (req, res, next) => {
 			.sort({ createdAt: -1 })
 			.skip(perPage * page - perPage)
 			.limit(perPage);
+
 		const count = await Activity.countDocuments(filter);
 		const totalPages = Math.ceil(count / perPage);
 
@@ -253,6 +252,59 @@ exports.getActions = async (req, res, next) => {
 			totalPages: totalPages,
 			totalItems: count
 		});
+	} catch (error) {
+		next(error);
+	}
+};
+
+exports.depositResponse = async (req, res, next) => {
+	const processId = req.params.id;
+	const userId = req.user._id;
+	let session;
+	try {
+		session = await mongoose.startSession();
+		session.startTransaction();
+
+		const depositRequest = await DepositRequest.findById(processId).session(session);
+		const activity = await Activity.findOne(depositRequest.activity).session();
+		const reciver = await User.findById(depositRequest.user).session(session);
+		const sender = await User.findById(userId).session(session);
+
+		const amountValue = depositRequest.amountValue;
+
+		activity.status = true;
+
+		sender.totalPayment += amountValue;
+		sender.Balance -= amountValue;
+
+		reciver.Balance += amountValue;
+		reciver.totalIncome += amountValue;
+
+		await sender.save();
+		await reciver.save();
+		await activity.save();
+		await session.commitTransaction();
+		session.endSession();
+		res
+			.status(200)
+			.json({ success: true, message: 'تم التحويل بنجاح وخصم المبلغ من حسابك ', sender, reciver, activity });
+	} catch (error) {
+		await session.abortTransaction();
+		session.endSession();
+		next(error);
+	}
+};
+
+exports.withdrawResponse = async (req, res, next) => {
+	try {
+		const processId = req.params.id;
+		const withDrawRequest = await WithdrawRequest.findById(processId).session(session);
+		const activity = await Activity.findOne(withDrawRequest.activity).session();
+
+		activity.status = true;
+		await activity.save();
+
+		res.status(201).json({ success: true, message: ' تمت العملية بنجاح ' });
 	} catch (error) {
 		next(error);
 	}

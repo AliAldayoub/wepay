@@ -25,23 +25,25 @@ const userSchema = new Schema(
 		timestamps: true
 	}
 );
-
 userSchema.pre('save', async function(next) {
 	const user = this;
 	let uniqueNumber;
-	do {
-		uniqueNumber = Math.floor(100000 + Math.random() * 900000);
-	} while (await User.findOne({ qrcode: uniqueNumber }));
-	this.qrcode = uniqueNumber;
+	if (this.qrcode === undefined) {
+		do {
+			uniqueNumber = Math.floor(100000 + Math.random() * 900000);
+		} while (await User.findOne({ qrcode: uniqueNumber }));
+		this.qrcode = uniqueNumber;
+	}
 	if (!user.isModified('password')) return next();
-	bcrypt.genSalt(10, (err, salt) => {
-		if (err) return next(err);
-		bcrypt.hash(user.password, salt, (err, hash) => {
-			if (err) return next(err);
-			user.password = hash;
-			next();
-		});
-	});
+
+	try {
+		const salt = await bcrypt.genSalt(10);
+		const hash = await bcrypt.hash(user.password, salt);
+		user.password = hash;
+		next();
+	} catch (err) {
+		return next(err);
+	}
 });
 
 userSchema.methods.validatePassword = async function(password) {
