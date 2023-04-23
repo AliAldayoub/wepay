@@ -4,6 +4,7 @@ const bcrypt = require('bcryptjs');
 // const nodemailer = require('nodemailer');
 const jwt = require('jsonwebtoken');
 const multer = require('multer');
+const fs = require('fs');
 // const transporter = nodemailer.createTransport({
 // 	service: 'gmail',
 // 	host: 'sip2-267.nexcess.net',
@@ -14,9 +15,13 @@ const multer = require('multer');
 // 		pass: process.env.pass
 // 	}
 // });
+const profileDirectory = 'uploads/profilePictures';
+if (!fs.existsSync(profileDirectory)) {
+	fs.mkdirSync(profileDirectory, { recursive: true });
+}
 const profileStorage = multer.diskStorage({
 	destination: function(req, file, cb) {
-		cb(null, 'uploads/profilePictures');
+		cb(null, profileDirectory);
 	},
 	filename: function(req, file, cb) {
 		cb(null, Date.now() + '-' + file.originalname);
@@ -25,9 +30,13 @@ const profileStorage = multer.diskStorage({
 
 const profileUpload = multer({ storage: profileStorage });
 
+const sellerDirectory = 'uploads/storeImages';
+if (!fs.existsSync(sellerDirectory)) {
+	fs.mkdirSync(sellerDirectory, { recursive: true });
+}
 const sellerStorage = multer.diskStorage({
 	destination: function(req, file, cb) {
-		cb(null, 'uploads/storeImages');
+		cb(null, sellerDirectory);
 	},
 	filename: function(req, file, cb) {
 		cb(null, Date.now() + '-' + file.originalname);
