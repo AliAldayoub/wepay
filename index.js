@@ -35,5 +35,3 @@ db.once('open', () => {
 app.listen(3000, () => {
 	console.log('heey again on 3000');
 });
-
-//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
