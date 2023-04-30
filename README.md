@@ -88,9 +88,9 @@ The following endpoints are available:
 
 where you can upload an image for your account and update your name or phone number
 should send it in form-data 
-### Request Body
+##### Request Body
 
-#### Form Data
+##### Form Data
 
 | Name         | Type        | Description                      |
 | ------------ | ----------- | -------------------------------- |
@@ -100,6 +100,61 @@ should send it in form-data
 | middleName  | string      | Optional. Description of the file |
 | phoneNumber  | string      | Optional. Description of the file |
 
-### Response
+##### Response
 the response will have 
 
+#### endpoint for updating Security information to your account :
+
+`PUT /api/v1.0/auth/updateSecurity`
+where you can update the password or PIN ,
+##### Request Body 
+send a  PUT Request with with a JSON payload containing your oldPassword where is `required` and newPassword or newPin:
+```json
+{
+	"oldPassword":"password1234",
+	"newPassword":"asdfgh123456",
+	"newPin":"6665"
+}
+```
+##### Response Data 
+if the oldPassword sended in the requset the response will have *status code 401* with json data contain message 
+```json
+{
+    "message": "Invalid  password"
+}
+```
+if everything be OK  the response will have *status code 201* with json data contain message 
+```json
+{
+    "message": "security field updated"
+}
+```
+
+
+#### endpoint for updating payment information to your account :
+
+`PUT /api/v1.0/auth/updatePaymentInfo`
+where you can update the bemo bank account number or Syriatel Cash or haram accept number ,
+##### Request Body 
+send a  PUT Request with with a JSON payload containing your information where is all `optional`
+bemoBank or syriatelCash or haram:
+```json
+{
+    "bemoBank":"P123456789",
+    "syriatelCash":"0987654321",
+    "haram":"0987654321"
+}
+```
+##### Response Data 
+if the oldPassword sended in the requset the response will have *status code 401* with json data contain message 
+```json
+{
+    "message": "Invalid  password"
+}
+```
+if everything be OK  the response will have *status code 201* with json data contain message 
+```json
+{
+    "message": "security field updated"
+}
+```

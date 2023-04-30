@@ -142,9 +142,12 @@ exports.updateSecurity = async (req, res, next) => {
 		if (!isPasswordValid) {
 			return res.status(401).json({ message: 'Invalid  password' });
 		}
-		const hashedPin = await bcrypt.hash(newPin, 10);
-		user.password = newPassword;
-		user.pin = hashedPin;
+		let hashedPin;
+		if (newPin !== undefined) {
+			hashedPin = await bcrypt.hash(newPin, 10);
+			user.pin = hashedPin;
+		}
+		if (newPassword !== undefined) user.password = newPassword;
 		user.save();
 		res.status(201).json({ message: 'security field updated' });
 	} catch (error) {
@@ -157,7 +160,27 @@ exports.updatePaymentInfo = async (req, res, next) => {
 	try {
 		const userId = req.user._id;
 		const { bemoBank, syriatelCash, haram } = req.body;
-		const user = await User.findByIdAndUpdate(userId, { bemoBank, syriatelCash, haram }, { new: true });
+		const user = await User.findByIdAndUpdate(
+			userId,
+			{ bemoBank, syriatelCash, haram },
+			{
+				new: true,
+				projection: {
+					_id: 1,
+					firstName: 1,
+					lastName: 1,
+					email: 1,
+					userName: 1,
+					role: 1,
+					Balance: 1,
+					totalIncome: 1,
+					totalPayment: 1,
+					bemoBank: 1,
+					syriatelCash: 1,
+					haram: 1
+				}
+			}
+		);
 		res.status(201).json({ success: true, message: 'User Payment information updated successfully', data: user });
 	} catch (error) {
 		next(error);
