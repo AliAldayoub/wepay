@@ -172,7 +172,8 @@ bemoBank or syriatelCash or haram:
     }
 }
 ```
-### endpoint for updating payment information to your account :
+
+### endpoint for updating the role of your acconut from default user to Seller :
 
 `POST /api/v1.0/auth/updateUserToSeller`
 where you can update your account role from a default user to a Seller 
@@ -312,7 +313,63 @@ response will have *status code 201* , success field and message field , data fi
 }
 ```
 
+### endpoint to get all payment you added in your account :
+
+`GET /api/v1.0/payment/getAllPayments`
+
+where you can retrive payments with 9 max number per single page
+
+#### Request Body 
+you should have access token to get your payments.
+you can send a specific number for the page in query params or nothing you will get data from page 1
+to send a query params should be like :
+`/api/v1.0/payment/getAllPayments?page=2`
+
+where `page=2` is number of the page you need
+
+#### Response Data 
+
+in the response you will get *status code 200* 
+data you will get is a `success` boolean variable , `message` , 
+array named `data` where contian the payments from the page and each payment have :
+1. your first name and last name 
+2. user you will pay to him/her if exist in site , you have `first name , last name and QRcode`
+3. payments sorted by date   
+`currentPage` you are in ,
+`totalPages` where is the number of pages you have payments in it, 
+`count` which specify number of payment in this page -that is if you don't have max number of payments-
+
+```json
+
+```
 
 
 
 
+
+
+### endpoint to delete a payment in your account :
+
+`DELETE /api/v1.0/payment/deletePayment/:id`
+you should have access token to delete a payment.
+here you can send a DELETE request with a parameter named id which detrmine the id of payment you need to delete,
+id you will have it when you retrive all payments from endpoint getAllPayments , you can get it from *data[0]._id*
+
+#### Request Body
+
+just send a delete request with id like that 
+`DELETE /api/v1.0/payment/deletePayment/43r534fd3r423fd234443`
+
+#### Response Data 
+in the response you will get *status code 200* 
+data you will get is a `success` boolean variable , `message` , 
+`data` which contain the details of payment you where deleted 
+```json 
+
+```
+
+
+
+
+
+### endpoint to retrive all dealers in site:
