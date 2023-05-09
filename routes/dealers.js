@@ -7,7 +7,7 @@ router.post(
 	'/addDealer',
 	authMiddleware.authenticateUser,
 	authMiddleware.authenticateAdmin,
-	dealersController.getAllDealers
+	dealersController.addDealer
 );
 
 module.exports = router;
