@@ -80,7 +80,7 @@ exports.signup = async (req, res, next) => {
 
 		await user.save();
 		const token = jwt.sign({ userId: user._id }, process.env.SECRET_KEY);
-		res.cookie('token', token, { httpOnly: true, secure: true });
+		res.cookie('token', token, { httpOnly: true });
 		return res.status(201).json({ message: 'User created. Check your email for activation code.', token, user });
 	} catch (error) {
 		next(error);
@@ -107,7 +107,7 @@ exports.login = async (req, res, next) => {
 		}
 
 		const token = jwt.sign({ userId: user._id }, process.env.SECRET_KEY);
-		res.cookie('token', token, { httpOnly: true, secure: true });
+		res.cookie('token', token, { httpOnly: true });
 		res.json({ token });
 	} catch (error) {
 		next(error);
@@ -218,6 +218,14 @@ exports.updateUserToSeller = async (req, res, next) => {
 				data: { seller, updatedUser }
 			});
 		});
+	} catch (error) {
+		next(error);
+	}
+};
+exports.logout = (req, res, next) => {
+	try {
+		res.clearCookie('token');
+		res.status(200).json({ message: 'Logged out successfully' });
 	} catch (error) {
 		next(error);
 	}
