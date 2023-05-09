@@ -2,6 +2,8 @@ const express = require('express');
 const app = express();
 const cors = require('cors');
 const helmet = require('helmet');
+const cookieParser = require('cookie-parser');
+app.use(cookieParser());
 const ErrorHandler = require('./middleware/ErrorHandler');
 const db = require('./util/database');
 const authRoute = require('./routes/auth');

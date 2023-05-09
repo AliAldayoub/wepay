@@ -3,7 +3,10 @@ const User = require('../models/user');
 
 exports.authenticateUser = async (req, res, next) => {
 	try {
-		const token = req.headers.authorization.split(' ')[1];
+		const token = req.cookies.token;
+		if (!token) {
+			return res.status(401).json({ message: 'Token not found' });
+		}
 		const decodedToken = jwt.verify(token, process.env.SECRET_KEY);
 		const userId = decodedToken.userId;
 		const user = await User.findById(userId);
