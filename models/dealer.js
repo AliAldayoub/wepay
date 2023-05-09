@@ -13,6 +13,6 @@ const dealerSchema = new Schema(
 	}
 );
 
-const Dealer = mongoose.model('Seller', dealerSchema);
+const Dealer = mongoose.model('Dealer', dealerSchema);
 
 module.exports = Dealer;
