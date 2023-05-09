@@ -10,7 +10,7 @@ exports.getAllDealers = async (req, res, next) => {
 		)
 			.skip(perPage * page - perPage)
 			.limit(perPage);
-		res.status(201).json({ success: true, message: 'All dealers Are retrieved successfully', data: dealers });
+		res.status(201).json({ success: true, message: 'All dealers Ae retrieved successfully', data: dealers });
 	} catch (error) {
 		next(error);
 	}
