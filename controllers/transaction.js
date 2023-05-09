@@ -244,17 +244,20 @@ exports.getActions = async (req, res, next) => {
 
 		const count = await Activity.countDocuments(filter);
 		const totalPages = Math.ceil(count / perPage);
-
-		return res.status(200).json({
-			success: true,
-			message: actionType
-				? `All ${actionType} Actions retrieved successfully`
-				: `All Actions retrieved successfully`,
-			data: actions,
-			currentPage: page,
-			totalPages: totalPages,
-			totalItems: count
-		});
+		if (count == 0) {
+			res.status(400).json({ message: 'لا يوجد أي أنشطة لعرضها' });
+		} else {
+			return res.status(200).json({
+				success: true,
+				message: actionType
+					? `All ${actionType} Actions retrieved successfully`
+					: `All Actions retrieved successfully`,
+				data: actions,
+				currentPage: page,
+				totalPages: totalPages,
+				totalItems: count
+			});
+		}
 	} catch (error) {
 		next(error);
 	}

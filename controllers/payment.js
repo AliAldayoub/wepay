@@ -57,24 +57,28 @@ exports.getAllPayments = async (req, res, next) => {
 		const userId = req.user._id;
 		const perPage = 9;
 		const page = req.query.page || 1;
-		const allPayments = await Payment.find({ user: userId })
-			.populate('user', 'firstName lastName')
-			.populate('paymentForUser', 'firstName lastName qrcode')
-			.sort({ paymentDate: -1 })
-			.skip(perPage * page - perPage)
-			.limit(perPage);
-
 		const count = await Payment.countDocuments({ user: userId }); // count documents for user id
-		const totalPages = Math.ceil(count / perPage);
+		if (count == 0) {
+			res.status(400).json({ message: 'لا يوجد أي مدفوعات لعرضها' });
+		} else {
+			const allPayments = await Payment.find({ user: userId })
+				.populate('user', 'firstName lastName')
+				.populate('paymentForUser', 'firstName lastName qrcode')
+				.sort({ paymentDate: -1 })
+				.skip(perPage * page - perPage)
+				.limit(perPage);
 
-		return res.status(200).json({
-			success: true,
-			message: 'All payments retrieved successfully',
-			data: allPayments,
-			currentPage: page,
-			totalPages: totalPages,
-			totalItems: count
-		});
+			const totalPages = Math.ceil(count / perPage);
+
+			return res.status(200).json({
+				success: true,
+				message: 'All payments retrieved successfully',
+				data: allPayments,
+				currentPage: page,
+				totalPages: totalPages,
+				totalItems: count
+			});
+		}
 	} catch (error) {
 		next(error);
 	}
