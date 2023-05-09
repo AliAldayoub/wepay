@@ -107,6 +107,7 @@ exports.login = async (req, res, next) => {
 		}
 
 		const token = jwt.sign({ userId: user._id }, process.env.SECRET_KEY);
+		res.cookie('token', token, { httpOnly: true });
 		res.json({ token });
 	} catch (error) {
 		next(error);
