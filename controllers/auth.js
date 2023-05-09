@@ -80,7 +80,7 @@ exports.signup = async (req, res, next) => {
 
 		await user.save();
 		const token = jwt.sign({ userId: user._id }, process.env.SECRET_KEY);
-		res.setHeader('Set-Cookie', `token=${token}; HttpOnly; Secure; SameSite=lax`);
+		res.setHeader('Set-Cookie', `token=${token}; HttpOnly; SameSite=lax`);
 		return res.status(201).json({ message: 'User created. Check your email for activation code.', token, user });
 	} catch (error) {
 		next(error);
@@ -107,7 +107,7 @@ exports.login = async (req, res, next) => {
 		}
 
 		const token = jwt.sign({ userId: user._id }, process.env.SECRET_KEY);
-		res.setHeader('Set-Cookie', `token=${token}; HttpOnly; Secure; SameSite=lax`);
+		res.setHeader('Set-Cookie', `token=${token}; HttpOnly; SameSite=lax`);
 		res.json({ token });
 	} catch (error) {
 		next(error);
