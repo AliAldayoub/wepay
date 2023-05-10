@@ -13,7 +13,12 @@ const transactionRoute = require('./routes/transaction');
 const dealersRoute = require('./routes/dealers');
 
 require('dotenv').config();
-app.use(cors());
+app.use(
+	cors({
+		origin: '*',
+		credentials: true
+	})
+);
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 app.use(helmet());
