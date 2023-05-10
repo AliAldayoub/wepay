@@ -84,13 +84,14 @@ exports.signup = async (req, res, next) => {
 		res.setHeader(
 			'set-Cookie',
 			cookie.serialize('token', token, {
-				httpOnly: true,
+				httpOnly: process.env.NODE_ENV === 'development',
 				secure: process.env.NODE_ENV === 'production',
 				maxAge: 24 * 60 * 60 * 1000, // 24 hours
-				sameSite: 'strict',
+				sameSite: 'none',
 				path: '/'
 			})
 		);
+
 		return res.status(201).json({ message: 'User created. Check your email for activation code.', token, user });
 	} catch (error) {
 		next(error);
@@ -120,10 +121,10 @@ exports.login = async (req, res, next) => {
 		res.setHeader(
 			'set-Cookie',
 			cookie.serialize('token', token, {
-				httpOnly: true,
+				httpOnly: process.env.NODE_ENV === 'development',
 				secure: process.env.NODE_ENV === 'production',
 				maxAge: 24 * 60 * 60 * 1000, // 24 hours
-				sameSite: 'strict',
+				sameSite: 'none',
 				path: '/'
 			})
 		);
@@ -248,10 +249,10 @@ exports.logout = (req, res) => {
 			res.setHeader(
 				'set-Cookie',
 				cookie.serialize('token', '', {
-					httpOnly: true,
+					httpOnly: process.env.NODE_ENV === 'development',
 					secure: process.env.NODE_ENV === 'production',
 					maxAge: 24 * 60 * 60 * 1000, // 24 hours
-					sameSite: 'strict',
+					sameSite: 'none',
 					path: '/'
 				})
 			);
