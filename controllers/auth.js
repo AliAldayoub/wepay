@@ -232,10 +232,15 @@ exports.updateUserToSeller = async (req, res, next) => {
 		next(error);
 	}
 };
-exports.logout = (req, res, next) => {
+
+exports.logout = (req, res) => {
 	try {
-		res.clearCookie('token');
-		res.status(200).json({ message: 'Logged out successfully' });
+		if (req.cookies.token) {
+			res.clearCookie('token');
+			res.status(200).json({ message: 'Logged out successfully' });
+		} else {
+			res.status(404).json({ message: 'token not in cookie' });
+		}
 	} catch (error) {
 		next(error);
 	}
