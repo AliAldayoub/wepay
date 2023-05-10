@@ -121,8 +121,8 @@ exports.login = async (req, res, next) => {
 		res.setHeader(
 			'set-Cookie',
 			cookie.serialize('token', token, {
-				httpOnly: process.env.NODE_ENV === 'development',
-				secure: process.env.NODE_ENV === 'production',
+				httpOnly: true,
+				secure: false,
 				maxAge: 24 * 60 * 60 * 1000, // 24 hours
 				sameSite: 'none',
 				path: '/'
