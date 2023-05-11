@@ -1,12 +1,9 @@
 const mongoose = require('mongoose');
 
-mongoose.connect(
-	'mongodb+srv://AliAldayoub:alooshDy111234@apidb.zqofb.mongodb.net/wepayDB?retryWrites=true&w=majority',
-	{
-		useNewUrlParser: true,
-		useUnifiedTopology: true
-	}
-);
+mongoose.connect(process.env.MONGODB_URI, {
+	useNewUrlParser: true,
+	useUnifiedTopology: true
+});
 
 const db = mongoose.connection;
 

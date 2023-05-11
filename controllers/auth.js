@@ -16,14 +16,7 @@ const fs = require('fs');
 // 		pass: process.env.pass
 // 	}
 // });
-const profileDirectory = '../uploads/profilePictures';
-if (!fs.existsSync(profileDirectory)) {
-	fs.mkdirSync(profileDirectory, { recursive: true });
-}
-const sellerDirectory = '../uploads/storeImages';
-if (!fs.existsSync(sellerDirectory)) {
-	fs.mkdirSync(sellerDirectory, { recursive: true });
-}
+
 const profileStorage = multer.diskStorage({
 	destination: function(req, file, cb) {
 		cb(null, 'uploads/profilePictures');

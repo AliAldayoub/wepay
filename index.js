@@ -1,3 +1,4 @@
+require('dotenv').config();
 const express = require('express');
 const app = express();
 const cors = require('cors');
@@ -14,7 +15,6 @@ const paymentRoute = require('./routes/payment');
 const transactionRoute = require('./routes/transaction');
 const dealersRoute = require('./routes/dealers');
 
-require('dotenv').config();
 app.use(
 	cors({
 		origin: true,
