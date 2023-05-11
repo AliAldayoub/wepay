@@ -87,7 +87,7 @@ exports.signup = async (req, res, next) => {
 				httpOnly: true,
 				secure: false,
 				maxAge: 24 * 60 * 60 * 1000, // 24 hours
-				sameSite: 'none',
+				sameSite: 'lax',
 				path: '/'
 			})
 		);
@@ -124,7 +124,7 @@ exports.login = async (req, res, next) => {
 				httpOnly: true,
 				secure: false,
 				maxAge: 24 * 60 * 60 * 1000, // 24 hours
-				sameSite: 'none',
+				sameSite: 'lax',
 				path: '/'
 			})
 		);
@@ -249,10 +249,10 @@ exports.logout = (req, res) => {
 			res.setHeader(
 				'set-Cookie',
 				cookie.serialize('token', '', {
-					httpOnly: process.env.NODE_ENV === 'development',
-					secure: process.env.NODE_ENV === 'production',
+					httpOnly: true,
+					secure: false,
 					maxAge: 24 * 60 * 60 * 1000, // 24 hours
-					sameSite: 'none',
+					sameSite: 'lax',
 					path: '/'
 				})
 			);
