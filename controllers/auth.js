@@ -79,7 +79,7 @@ exports.signup = async (req, res, next) => {
 			cookie.serialize('token', token, {
 				httpOnly: true,
 				secure: false,
-				maxAge: 24 * 60 * 60 * 1000, // 24 hours
+				maxAge: 24 * 60 * 60, // 24 hours
 				sameSite: 'lax',
 				path: '/'
 			})
@@ -95,7 +95,7 @@ exports.login = async (req, res, next) => {
 	try {
 		const { email, password, pin } = req.body;
 
-		const user = await User.findOne({ email });
+		const user = await User.findOne({ email }, '-password -pin');
 		if (!user) {
 			return res.status(401).json({ message: 'Invalid email' });
 		}
@@ -116,12 +116,12 @@ exports.login = async (req, res, next) => {
 			cookie.serialize('token', token, {
 				httpOnly: true,
 				secure: false,
-				maxAge: 24 * 60 * 60 * 1000, // 24 hours
+				maxAge: 24 * 60 * 60, // 24 hours
 				sameSite: 'lax',
 				path: '/'
 			})
 		);
-		res.json({ token });
+		res.json({ user });
 	} catch (error) {
 		next(error);
 	}
@@ -140,6 +140,7 @@ exports.updateBasic = async (req, res, next) => {
 			const user = await User.findByIdAndUpdate(
 				userId,
 				{ firstName, lastName, middleName, phoneNumber, imgURL },
+				'-password -pin',
 				{ new: true }
 			);
 			res.status(200).json({ success: true, message: 'User information updated successfully', data: user });
@@ -165,7 +166,7 @@ exports.updateSecurity = async (req, res, next) => {
 		}
 		if (newPassword !== undefined) user.password = newPassword;
 		user.save();
-		res.status(201).json({ message: 'security field updated' });
+		res.status(201).json({ message: 'security field updated', user });
 	} catch (error) {
 		console.log(error);
 		next(error);
@@ -223,7 +224,7 @@ exports.updateUserToSeller = async (req, res, next) => {
 				storeImgURL
 			});
 			await seller.save();
-			const updatedUser = await User.findByIdAndUpdate(userId, { role: 1 }, { new: true });
+			const updatedUser = await User.findByIdAndUpdate(userId, { role: 'seller' }, { new: true });
 
 			res.status(200).json({
 				success: true,

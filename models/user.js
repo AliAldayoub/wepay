@@ -9,10 +9,10 @@ const userSchema = new Schema(
 		email: { type: String, required: true, unique: true },
 		userName: { type: String, required: true, unique: true },
 		phoneNumber: { type: String },
-		imgURL: { type: String },
+		imgURL: { type: String, default: '' },
 		password: { type: String, required: true },
 		pin: { type: String, required: true },
-		role: { type: Number, enum: [ 0, 1, 2, 3 ], default: 0 },
+		role: { type: String, enum: [ 'user', 'admin', 'seller', 'dealer' ], default: 'user' },
 		qrcode: { type: String, unique: true },
 		bemoBank: { type: String, unique: true, sparse: true },
 		syriatelCash: { type: String, unique: true, sparse: true },
@@ -27,6 +27,9 @@ const userSchema = new Schema(
 );
 userSchema.pre('save', async function(next) {
 	const user = this;
+	if (user.imgURL == '') {
+		user.imgURL = `${user.firstName[0]} ${user.lastName[0]}`;
+	}
 	let uniqueNumber;
 	if (this.qrcode === undefined) {
 		do {

@@ -5,7 +5,9 @@ exports.authenticateUser = async (req, res, next) => {
 	try {
 		const token = req.cookies.token;
 		if (!token) {
-			return res.status(401).json({ message: 'Token not found' });
+			req.user = { role: 'guest' };
+			res.status(404).json({ message: 'Token not found' });
+			next();
 		}
 		const decodedToken = jwt.verify(token, process.env.SECRET_KEY);
 		const userId = decodedToken.userId;
@@ -21,7 +23,7 @@ exports.authenticateUser = async (req, res, next) => {
 };
 
 exports.authenticateAdmin = (req, res, next) => {
-	if (req.user.role !== 2) {
+	if (req.user.role !== 'admin') {
 		return res
 			.status(403)
 			.json({ message: 'Forbidden: you do not have permission to perform this action as an admin' });
@@ -30,7 +32,7 @@ exports.authenticateAdmin = (req, res, next) => {
 };
 
 exports.authenticateSeller = (req, res, next) => {
-	if (req.user.role >= 1) {
+	if (req.user.role !== 'seller' || req.user.role !== 'admin') {
 		return res
 			.status(403)
 			.json({ message: 'Forbidden: you do not have permission to perform this action as a Seller' });

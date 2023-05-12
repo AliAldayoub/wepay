@@ -11,6 +11,7 @@ exports.getAllDealers = async (req, res, next) => {
 			const dealers = await Dealer.find().skip(perPage * page - perPage).limit(perPage);
 			const totalPages = Math.ceil(count / perPage);
 			res.status(201).json({
+				role: req.user.role,
 				success: true,
 				message: 'All dealers Ae retrieved successfully',
 				data: dealers,
@@ -24,8 +25,10 @@ exports.getAllDealers = async (req, res, next) => {
 };
 exports.addDealer = async (req, res, next) => {
 	try {
-		const { fullName, address, phoneNumber, dealerImgURL } = req.body;
+		const { fullName, address, phoneNumber, userName, dealerImgURL } = req.body;
+		const user = await User.findOne({ userName });
 		const dealer = new Dealer({
+			user: user._id,
 			fullName,
 			address,
 			phoneNumber
