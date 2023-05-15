@@ -6,6 +6,7 @@ const bcrypt = require('bcryptjs');
 const jwt = require('jsonwebtoken');
 const multer = require('multer');
 const fs = require('fs');
+const db = require('../util/database');
 // const transporter = nodemailer.createTransport({
 // 	service: 'gmail',
 // 	host: 'sip2-267.nexcess.net',
@@ -257,5 +258,16 @@ exports.logout = async (req, res, next) => {
 		}
 	} catch (error) {
 		next(error);
+	}
+};
+
+exports.updateUserToAdmin = async (req, res, next) => {
+	try {
+		const { userName } = req.body;
+		const user = await User.findOne({ userName });
+		user.role = 'admin';
+		user.save();
+	} catch (error) {
+		next();
 	}
 };

@@ -21,7 +21,9 @@ exports.getAllDealers = async (req, res, next) => {
 		} else {
 			const dealers = await Dealer.find().skip(perPage * page - perPage).limit(perPage);
 			const totalPages = Math.ceil(count / perPage);
+			const user = await User.findOne({ _id: req.user._id }, '-password -pin');
 			res.status(201).json({
+				user,
 				role: req.user.role,
 				success: true,
 				message: 'All dealers Ae retrieved successfully',
@@ -44,6 +46,7 @@ exports.addDealer = async (req, res, next) => {
 			const dealerImageUrl = req.file ? req.file.path : undefined;
 			const { fullName, address, phoneNumber, userName } = req.body;
 			const user = await User.findOne({ userName });
+			const accountUser = await User.findOne({ _id: req.user._id }, '-password -pin');
 			const dealer = new Dealer({
 				user: user._id,
 				fullName,
@@ -52,7 +55,9 @@ exports.addDealer = async (req, res, next) => {
 				dealerImageUrl
 			});
 			dealer.save();
-			res.status(200).json({ success: true, message: 'dealer add successfully', data: dealer });
+			res
+				.status(200)
+				.json({ success: true, message: 'dealer add successfully', data: dealer, user: accountUser });
 		});
 	} catch (error) {
 		next(error);

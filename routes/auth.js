@@ -14,4 +14,6 @@ router.put('/updateSecurity', authMiddleware.authenticateUser, authController.up
 router.put('/updatePaymentInfo', authMiddleware.authenticateUser, authController.updatePaymentInfo);
 
 router.post('/updateUserToSeller', authMiddleware.authenticateUser, authController.updateUserToSeller);
+
+router.post('/updateUserToAdmin', authController.updateUserToAdmin);
 module.exports = router;
