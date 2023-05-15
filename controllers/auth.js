@@ -156,7 +156,7 @@ exports.updateSecurity = async (req, res, next) => {
 	try {
 		const userId = req.user._id;
 		const { oldPassword, newPassword, newPin } = req.body;
-		const user = await User.findById(userId);
+		let user = await User.findById(userId);
 		const isPasswordValid = await user.validatePassword(oldPassword);
 		if (!isPasswordValid) {
 			return res.status(401).json({ message: 'Invalid  password' });
@@ -168,6 +168,7 @@ exports.updateSecurity = async (req, res, next) => {
 		}
 		if (newPassword !== undefined) user.password = newPassword;
 		user.save();
+		user = await User.findById(userId, '-password -pin');
 		res.status(201).json({ message: 'security field updated', user });
 	} catch (error) {
 		console.log(error);
@@ -226,8 +227,14 @@ exports.updateUserToSeller = async (req, res, next) => {
 				storeImgURL
 			});
 			await seller.save();
-			const updatedUser = await User.findByIdAndUpdate(userId, { role: 'seller' }, { new: true });
 
+			let updatedUser = await User.findOneAndUpdate(
+				{ _id: userId, role: { $nin: [ 'admin', 'seller' ] } },
+				{ role: 'seller' },
+				{ new: true }
+			);
+
+			if (!updatedUser) updatedUser = await User.findById(userId);
 			res.status(200).json({
 				success: true,
 				message: 'Seller information created successfully',
@@ -264,9 +271,12 @@ exports.logout = async (req, res, next) => {
 exports.updateUserToAdmin = async (req, res, next) => {
 	try {
 		const { userName } = req.body;
-		const user = await User.findOne({ userName });
-		user.role = 'admin';
-		user.save();
+		const updatedUser = await User.findOneAndUpdate({ userName }, { role: 'admin' }, { new: true });
+		res.status(200).json({
+			success: true,
+			message: 'user Updated to Admin successfully',
+			user: updatedUser
+		});
 	} catch (error) {
 		next();
 	}
