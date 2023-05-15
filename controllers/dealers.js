@@ -1,6 +1,6 @@
 const User = require('../models/user');
 const Dealer = require('../models/dealer');
-
+const multer = require('multer');
 const dealerStorage = multer.diskStorage({
 	destination: function(req, file, cb) {
 		cb(null, 'uploads/dealersAvatar');
