@@ -7,10 +7,7 @@ const multer = require('multer');
 const mongoose = require('mongoose');
 const fs = require('fs');
 const bcrypt = require('bcryptjs');
-const depositDirectory = '../uploads/depositProcesses';
-if (!fs.existsSync(depositDirectory)) {
-	fs.mkdirSync(depositDirectory, { recursive: true });
-}
+
 const depositStorage = multer.diskStorage({
 	destination: function(req, file, cb) {
 		cb(null, 'uploads/depositProcesses');
