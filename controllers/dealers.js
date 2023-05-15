@@ -36,7 +36,7 @@ exports.getAllDealers = async (req, res, next) => {
 };
 exports.addDealer = async (req, res, next) => {
 	try {
-		depositUpload.single('dealerImageUrl')(req, res, async function(err) {
+		dealerUpload.single('dealerImageUrl')(req, res, async function(err) {
 			if (err) {
 				console.error(err);
 				return res.status(500).json({ success: false, message: 'Error uploading file' });
