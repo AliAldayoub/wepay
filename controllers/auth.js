@@ -95,7 +95,7 @@ exports.login = async (req, res, next) => {
 	try {
 		const { email, password, pin } = req.body;
 
-		const user = await User.findOne({ email }, '-password -pin');
+		let user = await User.findOne({ email });
 		if (!user) {
 			return res.status(401).json({ message: 'Invalid email' });
 		}
@@ -121,6 +121,7 @@ exports.login = async (req, res, next) => {
 				path: '/'
 			})
 		);
+		user = await User.findOne({ email }, '-password -pin');
 		res.json({ user });
 	} catch (error) {
 		next(error);
