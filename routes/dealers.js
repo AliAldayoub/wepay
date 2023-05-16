@@ -29,6 +29,7 @@ router.post(
 	'/addDealer',
 	dealerUpload.single('dealerImgURL'),
 	authMiddleware.authenticateUser,
+	authMiddleware.haveToken,
 	authMiddleware.authenticateAdmin,
 	dealersController.addDealer
 );

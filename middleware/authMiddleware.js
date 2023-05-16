@@ -36,3 +36,13 @@ exports.authenticateSeller = (req, res, next) => {
 	}
 	next();
 };
+exports.haveToken = (req, res, next) => {
+	try {
+		if (req.user.role === 'guest') {
+			return res.status(401).json({ message: 'no token you can not access this route' });
+		}
+		next();
+	} catch (error) {
+		next(error);
+	}
+};

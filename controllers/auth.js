@@ -119,8 +119,7 @@ exports.login = async (req, res, next) => {
 				secure: true,
 				maxAge: 24 * 60 * 60, // 24 hours
 				sameSite: 'none',
-				path: '/',
-				domain: '.wepay-ali-aldayoub.onrender.com'
+				path: '/'
 			})
 		);
 		user = await User.findOne({ email }, '-password -pin');
@@ -146,7 +145,9 @@ exports.updateBasic = async (req, res, next) => {
 				'-password -pin',
 				{ new: true }
 			);
-			res.status(200).json({ success: true, message: 'User information updated successfully', data: user });
+			res
+				.status(200)
+				.json({ success: true, message: 'User information updated successfully', data: user, role: user.role });
 		});
 	} catch (error) {
 		next(error);
@@ -170,7 +171,7 @@ exports.updateSecurity = async (req, res, next) => {
 		if (newPassword !== undefined) user.password = newPassword;
 		user.save();
 		user = await User.findById(userId, '-password -pin');
-		res.status(201).json({ message: 'security field updated', user });
+		res.status(201).json({ message: 'security field updated', user, role: user.role });
 	} catch (error) {
 		console.log(error);
 		next(error);
@@ -280,5 +281,16 @@ exports.updateUserToAdmin = async (req, res, next) => {
 		});
 	} catch (error) {
 		next();
+	}
+};
+exports.getUserInfo = async (req, res, next) => {
+	try {
+		const userId = req.user._id;
+		const user = await User.findById(userId, '-password -pin');
+		res
+			.status(200)
+			.json({ success: true, message: 'user information retrived successfully', user, role: user.role });
+	} catch (error) {
+		next(error);
 	}
 };
