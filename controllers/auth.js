@@ -79,7 +79,7 @@ exports.signup = async (req, res, next) => {
 			'set-Cookie',
 			cookie.serialize('token', token, {
 				httpOnly: true,
-				secure: false,
+				secure: true,
 				maxAge: 24 * 60 * 60, // 24 hours
 				sameSite: 'lax',
 				path: '/'
@@ -116,14 +116,14 @@ exports.login = async (req, res, next) => {
 			'set-Cookie',
 			cookie.serialize('token', token, {
 				httpOnly: true,
-				secure: false,
+				secure: true,
 				maxAge: 24 * 60 * 60, // 24 hours
 				sameSite: 'lax',
 				path: '/'
 			})
 		);
 		user = await User.findOne({ email }, '-password -pin');
-		res.json({ user });
+		res.json({ user , token });
 	} catch (error) {
 		next(error);
 	}
