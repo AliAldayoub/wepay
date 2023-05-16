@@ -123,7 +123,7 @@ exports.login = async (req, res, next) => {
 			})
 		);
 		user = await User.findOne({ email }, '-password -pin');
-		res.json({ user , token });
+		res.json({ user });
 	} catch (error) {
 		next(error);
 	}
@@ -253,7 +253,7 @@ exports.logout = async (req, res, next) => {
 				'set-Cookie',
 				cookie.serialize('token', '', {
 					httpOnly: true,
-					secure: false,
+					secure: true,
 					maxAge: 0,
 					sameSite: 'lax',
 					path: '/'
