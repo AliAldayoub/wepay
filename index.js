@@ -14,6 +14,12 @@ const storeRoute = require('./routes/store');
 const paymentRoute = require('./routes/payment');
 const transactionRoute = require('./routes/transaction');
 const dealersRoute = require('./routes/dealers');
+app.use((req, res, next) => {
+	res.setHeader('Access-Control-Allow-Origin', '*');
+	res.setHeader('Access-Control-Allow-Methods', 'OPTIONS, GET, POST, PUT, PATCH, DELETE');
+	res.setHeader('Access-Control-Allow-Headers', '*');
+	next();
+});
 
 app.use(
 	cors({
@@ -22,6 +28,7 @@ app.use(
 	})
 );
 app.use(express.json());
+app.use('/uploads', express.static('uploads', { fallthrough: false }));
 app.use(express.urlencoded({ extended: true }));
 app.use(helmet());
 
