@@ -42,7 +42,7 @@ exports.addDealer = async (req, res, next) => {
 			dealerImgURL
 		});
 		dealer.save();
-		res.status(200).json({ success: true, message: 'dealer add successfully', data: dealer, user: accountUser });
+		res.status(200).json({ success: true, message: 'dealer add  successfully', data: dealer, user: accountUser });
 	} catch (error) {
 		next(error);
 	}
