@@ -119,7 +119,8 @@ exports.login = async (req, res, next) => {
 				secure: true,
 				maxAge: 24 * 60 * 60, // 24 hours
 				sameSite: 'none',
-				path: '/'
+				path: '/',
+				domain: '.wepay-ali-aldayoub.onrender.com'
 			})
 		);
 		user = await User.findOne({ email }, '-password -pin');
