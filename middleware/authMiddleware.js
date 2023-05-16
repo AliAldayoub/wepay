@@ -3,6 +3,7 @@ const User = require('../models/user');
 
 exports.authenticateUser = async (req, res, next) => {
 	try {
+		console.log(req.cookies);
 		const token = req.cookies.token;
 		if (!token) {
 			req.user = { role: 'guest' };
