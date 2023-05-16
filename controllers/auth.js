@@ -79,7 +79,7 @@ exports.signup = async (req, res, next) => {
 			'set-Cookie',
 			cookie.serialize('token', token, {
 				httpOnly: true,
-				secure: true,
+				secure: false,
 				maxAge: 24 * 60 * 60, // 24 hours
 				sameSite: 'lax',
 				path: '/'
@@ -116,7 +116,7 @@ exports.login = async (req, res, next) => {
 			'set-Cookie',
 			cookie.serialize('token', token, {
 				httpOnly: true,
-				secure: true,
+				secure: false,
 				maxAge: 24 * 60 * 60, // 24 hours
 				sameSite: 'lax',
 				path: '/'
@@ -253,7 +253,7 @@ exports.logout = async (req, res, next) => {
 				'set-Cookie',
 				cookie.serialize('token', '', {
 					httpOnly: true,
-					secure: true,
+					secure: false,
 					maxAge: 0,
 					sameSite: 'lax',
 					path: '/'
