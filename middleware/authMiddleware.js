@@ -11,6 +11,7 @@ exports.authenticateUser = async (req, res, next) => {
 			const decodedToken = jwt.verify(token, process.env.SECRET_KEY);
 			const userId = decodedToken.userId;
 			const user = await User.findById(userId);
+			console.log(user);
 			req.user = user;
 		}
 		next();
@@ -20,6 +21,7 @@ exports.authenticateUser = async (req, res, next) => {
 };
 
 exports.authenticateAdmin = (req, res, next) => {
+	console.log('admiiiin', req.user);
 	if (req.user.role !== 'admin') {
 		return res
 			.status(403)
