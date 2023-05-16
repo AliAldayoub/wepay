@@ -30,12 +30,13 @@ exports.getAllDealers = async (req, res, next) => {
 exports.addDealer = async (req, res, next) => {
 	try {
 		const dealerImgURL = req.file ? req.file.path : undefined;
-		const { fullName, address, phoneNumber, userName } = req.body;
+		const { fullName, address, phoneNumber, userName, city } = req.body;
 		const user = await User.findOne({ userName });
 		const accountUser = await User.findOne({ _id: req.user._id }, '-password -pin');
 		const dealer = new Dealer({
 			user: user._id,
 			fullName,
+			city,
 			address,
 			phoneNumber,
 			dealerImgURL

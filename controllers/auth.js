@@ -79,9 +79,9 @@ exports.signup = async (req, res, next) => {
 			'set-Cookie',
 			cookie.serialize('token', token, {
 				httpOnly: true,
-				secure: false,
+				secure: true,
 				maxAge: 24 * 60 * 60, // 24 hours
-				sameSite: 'lax',
+				sameSite: 'none',
 				path: '/'
 			})
 		);
@@ -116,9 +116,9 @@ exports.login = async (req, res, next) => {
 			'set-Cookie',
 			cookie.serialize('token', token, {
 				httpOnly: true,
-				secure: false,
+				secure: true,
 				maxAge: 24 * 60 * 60, // 24 hours
-				sameSite: 'lax',
+				sameSite: 'none',
 				path: '/'
 			})
 		);
@@ -253,9 +253,9 @@ exports.logout = async (req, res, next) => {
 				'set-Cookie',
 				cookie.serialize('token', '', {
 					httpOnly: true,
-					secure: false,
+					secure: true,
 					maxAge: 0,
-					sameSite: 'lax',
+					sameSite: 'none',
 					path: '/'
 				})
 			);
