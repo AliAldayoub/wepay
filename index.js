@@ -39,7 +39,7 @@ app.get('/', (req, res, next) => {
 app.use(ErrorHandler);
 db.on('error', console.error.bind(console, 'connection error : '));
 db.once('open', () => {
-	console.log('connected successfuly ');
+	console.log('connected  successfuly ');
 });
 
 app.listen(3000, () => {
