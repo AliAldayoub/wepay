@@ -75,13 +75,7 @@ exports.signup = async (req, res, next) => {
 
 		await user.save();
 		const token = jwt.sign({ userId: user._id }, process.env.SECRET_KEY);
-		res.cookie('token', token, {
-			httpOnly: true,
-			secure: true,
-			maxAge: 24 * 60 * 60, // 24 hours
-			sameSite: 'none',
-			path: '/'
-		});
+
 		res.setHeader(
 			'set-Cookie',
 			cookie.serialize('token', token, {
@@ -119,13 +113,7 @@ exports.login = async (req, res, next) => {
 		}
 
 		const token = jwt.sign({ userId: user._id }, process.env.SECRET_KEY);
-		res.cookie('token', token, {
-			httpOnly: true,
-			secure: true,
-			maxAge: 24 * 60 * 60, // 24 hours
-			sameSite: 'none',
-			path: '/'
-		});
+
 		res.setHeader(
 			'set-Cookie',
 			cookie.serialize('token', token, {
@@ -265,13 +253,6 @@ exports.updateUserToSeller = async (req, res, next) => {
 exports.logout = async (req, res, next) => {
 	try {
 		if (req.cookies.token) {
-			res.cookie('token', '', {
-				httpOnly: true,
-				secure: true,
-				maxAge: 0, // 24 hours
-				sameSite: 'none',
-				path: '/'
-			});
 			res.setHeader(
 				'set-Cookie',
 				cookie.serialize('token', '', {
