@@ -4,8 +4,29 @@ const app = express();
 const cors = require('cors');
 const helmet = require('helmet');
 const cookieParser = require('cookie-parser');
+const session = require('express-session');
 
 app.use(cookieParser());
+app.use(
+	cors({
+		origin: true,
+		credentials: true
+	})
+);
+app.use(
+	session({
+		secret: 'secretsession',
+		resave: false,
+		saveUninitialized: false,
+		cookie: {
+			httpOnly: true,
+			secure: true,
+			sameSite: 'none',
+			maxAge: 60 * 60 * 24,
+			path: '/'
+		}
+	})
+);
 
 const ErrorHandler = require('./middleware/ErrorHandler');
 const db = require('./util/database');
@@ -14,12 +35,6 @@ const storeRoute = require('./routes/store');
 const paymentRoute = require('./routes/payment');
 const transactionRoute = require('./routes/transaction');
 const dealersRoute = require('./routes/dealers');
-app.use(
-	cors({
-		origin: true,
-		credentials: true
-	})
-);
 
 app.use(express.json());
 app.use('/uploads', express.static('uploads', { fallthrough: false }));
