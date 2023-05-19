@@ -4,7 +4,8 @@
 	"description": "online payment getway",
 	"main": "index.js",
 	"scripts": {
-		"start": "nodemon run index.js"
+		"dev": "nodemon run index.js",
+		"start": "node run index.js"
 	},
 	"author": "Ali Aldayoub",
 	"license": "MIT",
