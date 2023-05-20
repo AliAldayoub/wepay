@@ -289,6 +289,9 @@ exports.getUserInfo = async (req, res, next) => {
 	try {
 		const userId = req.user._id;
 		const user = await User.findById(userId, '-password -pin');
+		if (!user) {
+			res.status(404).json({ message: 'user not found try again' });
+		}
 		res
 			.status(200)
 			.json({ success: true, message: 'user information retrived successfully', user, role: user.role });
