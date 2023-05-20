@@ -32,7 +32,7 @@ exports.depositRequest = async (req, res, next) => {
 
 			const session = await DepositRequest.startSession();
 			session.startTransaction();
-			const admin = await User.findOne({ role: 2 });
+			const admin = await User.findOne({ role: 'admin' });
 			const activity = new Activity({
 				sender: admin._id,
 				reciver: userId,
@@ -80,7 +80,7 @@ exports.withdrawRequest = async (req, res, next) => {
 
 	try {
 		const user = await User.findById(userId).session(session);
-		const admin = await User.findOne({ role: 2 }).session(session);
+		const admin = await User.findOne({ role: 'admin' }).session(session);
 
 		if (user.balance < amountValue) {
 			return res.status(400).json({

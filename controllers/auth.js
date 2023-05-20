@@ -7,17 +7,7 @@ const jwt = require('jsonwebtoken');
 const multer = require('multer');
 const fs = require('fs');
 const db = require('../util/database');
-// const transporter = nodemailer.createTransport({
-// 	service: 'gmail',
-// 	host: 'sip2-267.nexcess.net',
-// 	port: 587,
-// 	secure: false,
-// 	auth: {
-// 		user: process.env.user,
-// 		pass: process.env.pass
-// 	}
-// });
-
+const Activity = require('../models/activity');
 const profileStorage = multer.diskStorage({
 	destination: function(req, file, cb) {
 		cb(null, 'uploads/profilePictures');
@@ -139,8 +129,13 @@ exports.updateBasic = async (req, res, next) => {
 				console.error(err);
 				return res.status(500).json({ success: false, message: 'Error uploading file' });
 			}
-			const { firstName, lastName, middleName, phoneNumber } = req.body;
+			const { fullName, phoneNumber } = req.body;
 			const imgURL = req.file ? req.file.path : undefined;
+			const names = fullName.split(' ');
+
+			const firstName = names[0] || req.user.firstName;
+			const middleName = names[1] || req.user.middleName;
+			const lastName = names[2] || req.user.lastName;
 			const user = await User.findByIdAndUpdate(
 				userId,
 				{ firstName, lastName, middleName, phoneNumber, imgURL },
@@ -221,29 +216,55 @@ exports.updateUserToSeller = async (req, res, next) => {
 			}
 			const { storeName, address, coo, city, storeType } = req.body;
 			const storeImgURL = req.file ? req.file.path : undefined;
-			const seller = await new Seller({
-				user: userId,
-				storeName,
-				address,
-				coo,
-				city,
-				storeType,
-				storeImgURL
-			});
-			await seller.save();
+			const existUser = await User.findById(userId);
+			if (existUser.Balance < 5000) {
+				return res.status(401).json({
+					message: 'you dont have enough money to be a seller please recharge your account and try again'
+				});
+			} else {
+				const admin = await User.findOne({ role: 'admin' });
+				existUser.Balance -= 5000;
+				existUser.totalPayment -= 5000;
+				admin.Balance += 5000;
+				admin.totalIncome += 5000;
+				existUser.save();
+				admin.save();
+				const activity = new Activity({
+					sender: existUser._id,
+					reciver: admin._id,
+					senderAction: 'تحويل',
+					reciverAction: 'استلام رصيد',
+					senderDetails: `ترقية الحساب ل تاجر`,
+					reciverDetails: `اجور ترقية حساب للمستخدم ${existUser.firstName} ${existUser.lastName}`,
+					amountValue: 5000,
+					status: true
+				});
+				activity.save();
 
-			let updatedUser = await User.findOneAndUpdate(
-				{ _id: userId, role: { $nin: [ 'admin', 'seller' ] } },
-				{ role: 'seller' },
-				{ new: true }
-			);
+				const seller = await new Seller({
+					user: userId,
+					storeName,
+					address,
+					coo,
+					city,
+					storeType,
+					storeImgURL
+				});
+				await seller.save();
 
-			if (!updatedUser) updatedUser = await User.findById(userId);
-			res.status(200).json({
-				success: true,
-				message: 'Seller information created successfully',
-				data: { seller, updatedUser }
-			});
+				let updatedUser = await User.findOneAndUpdate(
+					{ _id: userId, role: { $nin: [ 'admin', 'seller' ] } },
+					{ role: 'seller' },
+					{ new: true }
+				);
+
+				if (!updatedUser) updatedUser = await User.findById(userId);
+				res.status(200).json({
+					success: true,
+					message: 'Seller information created successfully',
+					data: { seller, updatedUser, role: updatedUser.role }
+				});
+			}
 		});
 	} catch (error) {
 		next(error);
