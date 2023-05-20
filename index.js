@@ -13,20 +13,20 @@ app.use(
 		credentials: true
 	})
 );
-app.use(
-	session({
-		secret: 'secretsession',
-		resave: false,
-		saveUninitialized: false,
-		cookie: {
-			httpOnly: true,
-			secure: true,
-			sameSite: 'none',
-			maxAge: 60 * 60 * 24,
-			path: '/'
-		}
-	})
-);
+// app.use(
+// 	session({
+// 		secret: 'secretsession',
+// 		resave: false,
+// 		saveUninitialized: false,
+// 		cookie: {
+// 			httpOnly: true,
+// 			secure: true,
+// 			sameSite: 'none',
+// 			maxAge: 60 * 60 * 24,
+// 			path: '/'
+// 		}
+// 	})
+// );
 
 const ErrorHandler = require('./middleware/ErrorHandler');
 const db = require('./util/database');
