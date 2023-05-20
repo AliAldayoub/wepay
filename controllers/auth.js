@@ -317,3 +317,29 @@ exports.getUserInfo = async (req, res, next) => {
 		next(error);
 	}
 };
+
+exports.resetPassword = async (req, res, next) => {
+	try {
+		const { email } = req.body;
+		const type = req.query.type;
+		const user = await User.findOne({ email });
+		if (user) {
+			if (type == 'sendCode') {
+				randomNumber = Math.ceil(Math.random() * 10000);
+				console.log(randomNumber);
+				return res.status(200).json({ message: 'check your email address for the code', randomNumber });
+			} else if (type == 'reset') {
+				const password = req.body.password;
+				user.password = password;
+				user.save();
+				return res.status(201).json({ message: 'password updated successfully' });
+			} else {
+				return res.status(401).json({ message: 'error in the request try again' });
+			}
+		} else {
+			return res.status(401).json({ message: 'email is invalid try again with valid email' });
+		}
+	} catch (error) {
+		next(error);
+	}
+};
