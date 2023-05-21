@@ -115,7 +115,7 @@ exports.login = async (req, res, next) => {
 			})
 		);
 		user = await User.findOne({ email }, '-password -pin');
-		res.json({ user });
+		res.json({ user, token });
 	} catch (error) {
 		next(error);
 	}
@@ -129,17 +129,11 @@ exports.updateBasic = async (req, res, next) => {
 				console.error(err);
 				return res.status(500).json({ success: false, message: 'Error uploading file' });
 			}
-			const { fullName, phoneNumber } = req.body;
+			const { firstName, lastName, middleName, phoneNumber } = req.body;
 			const imgURL = req.file ? req.file.path : undefined;
-			const names = fullName.split(' ');
-
-			const firstName = names[0] || req.user.firstName;
-			const middleName = names[1] || req.user.middleName;
-			const lastName = names[2] || req.user.lastName;
 			const user = await User.findByIdAndUpdate(
 				userId,
 				{ firstName, lastName, middleName, phoneNumber, imgURL },
-				'-password -pin',
 				{ new: true }
 			);
 			res
