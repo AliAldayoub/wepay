@@ -30,8 +30,8 @@ const dealerUpload = multer({ storage: storage });
 router.get('/getAllDealers', authMiddleware.authenticateUser, dealersController.getAllDealers);
 router.post(
 	'/addDealer',
-	dealerUpload.single('dealerImgURL'),
 	authMiddleware.authenticateUser,
+	dealerUpload.single('dealerImgURL'),
 	authMiddleware.haveToken,
 	authMiddleware.authenticateAdmin,
 	dealersController.addDealer

@@ -2,7 +2,10 @@ const express = require('express');
 const router = express.Router();
 const authMiddleware = require('../middleware/authMiddleware');
 const authController = require('../controllers/auth');
+const multer = require('multer');
 
+const storage = multer.memoryStorage();
+const upload = multer({ storage: storage });
 // Route for user signup
 router.post('/signup', authController.signup);
 
@@ -10,7 +13,13 @@ router.post('/signup', authController.signup);
 router.post('/login', authController.login);
 // router.post('/logout', authController.logout);
 
-router.put('/updateBasic', authMiddleware.authenticateUser, authMiddleware.haveToken, authController.updateBasic);
+router.put(
+	'/updateBasic',
+	authMiddleware.authenticateUser,
+	authMiddleware.haveToken,
+	upload.single('imgURL'),
+	authController.updateBasic
+);
 router.put('/updateSecurity', authMiddleware.authenticateUser, authMiddleware.haveToken, authController.updateSecurity);
 router.put(
 	'/updatePaymentInfo',
@@ -23,6 +32,7 @@ router.post(
 	'/updateUserToSeller',
 	authMiddleware.authenticateUser,
 	authMiddleware.haveToken,
+	upload.single('storeImgURL'),
 	authController.updateUserToSeller
 );
 

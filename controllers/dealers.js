@@ -29,20 +29,15 @@ exports.getAllDealers = async (req, res, next) => {
 exports.addDealer = async (req, res, next) => {
 	try {
 		const dealerImgURL = req.file ? req.file : undefined;
-		let fileUrl;
+		let fileURL;
 		if (dealerImgURL) {
 			await b2.authorize();
 
-			const bucketId = 'be0fdb27c47830e8898f0b1b';
-			const fileName = dealerImgURL.originalname;
+			const bucketId = process.env.bucketId;
+			const fileName = Date.now() + '-' + dealerImgURL.originalname;
 			const fileData = dealerImgURL.buffer;
 			const response = await b2.getUploadUrl(bucketId);
-			console.log(
-				'hellllllllllllllo',
-				response.data.uploadUrl,
-				'heeeeeeeeeeeeeey',
-				response.data.authorizationToken
-			);
+
 			const uploadResponse = await b2.uploadFile({
 				uploadUrl: response.data.uploadUrl,
 				uploadAuthToken: response.data.authorizationToken,
@@ -51,10 +46,10 @@ exports.addDealer = async (req, res, next) => {
 				data: fileData
 			});
 
+			fileURL = `${process.env.baseURL}/${process.env.bucketName}/${fileName}`;
+
 			// console.log(uploadResponse);
 			// const bucket = await b2.getBucketName(bucketId);
-			const FileInfo = await b2.getFileInfo({ fileId: uploadResponse.data.fileId });
-			console.log(FileInfo.data);
 		}
 		const { fullName, address, phoneNumber, userName, city } = req.body;
 		const user = await User.findOne({ userName });
@@ -65,7 +60,7 @@ exports.addDealer = async (req, res, next) => {
 			city,
 			address,
 			phoneNumber,
-			dealerImgURL: fileUrl !== undefined ? fileUrl : `${user.firstName} ${user.lastName}`
+			dealerImgURL: fileURL !== undefined ? fileURL : process.env.defaultAvatar
 		});
 		dealer.save();
 		res.status(200).json({ success: true, message: 'dealer add  successfully', data: dealer, user: accountUser });

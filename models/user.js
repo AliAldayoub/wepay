@@ -28,7 +28,7 @@ const userSchema = new Schema(
 userSchema.pre('save', async function(next) {
 	const user = this;
 	if (user.imgURL == '') {
-		user.imgURL = `${user.firstName[0]} ${user.lastName[0]}`;
+		user.imgURL = process.env.defaultAvatar;
 	}
 	let uniqueNumber;
 	if (this.qrcode === undefined) {
