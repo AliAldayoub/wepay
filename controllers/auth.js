@@ -66,16 +66,16 @@ exports.signup = async (req, res, next) => {
 		await user.save();
 		const token = jwt.sign({ userId: user._id }, process.env.SECRET_KEY);
 
-		res.setHeader(
-			'set-Cookie',
-			cookie.serialize('token', token, {
-				httpOnly: true,
-				secure: true,
-				maxAge: 24 * 60 * 60, // 24 hours
-				sameSite: 'none',
-				path: '/'
-			})
-		);
+		// res.setHeader(
+		// 	'set-Cookie',
+		// 	cookie.serialize('token', token, {
+		// 		httpOnly: true,
+		// 		secure: true,
+		// 		maxAge: 24 * 60 * 60, // 24 hours
+		// 		sameSite: 'none',
+		// 		path: '/'
+		// 	})
+		// );
 
 		return res.status(201).json({ message: 'User created. Check your email for activation code.', token, user });
 	} catch (error) {
@@ -104,16 +104,16 @@ exports.login = async (req, res, next) => {
 
 		const token = jwt.sign({ userId: user._id }, process.env.SECRET_KEY);
 
-		res.setHeader(
-			'set-Cookie',
-			cookie.serialize('token', token, {
-				httpOnly: true,
-				secure: true,
-				maxAge: 24 * 60 * 60, // 24 hours
-				sameSite: 'none',
-				path: '/'
-			})
-		);
+		// res.setHeader(
+		// 	'set-Cookie',
+		// 	cookie.serialize('token', token, {
+		// 		httpOnly: true,
+		// 		secure: true,
+		// 		maxAge: 24 * 60 * 60, // 24 hours
+		// 		sameSite: 'none',
+		// 		path: '/'
+		// 	})
+		// );
 		user = await User.findOne({ email }, '-password -pin');
 		res.json({ user, token });
 	} catch (error) {
@@ -275,27 +275,27 @@ exports.updateUserToSeller = async (req, res, next) => {
 	}
 };
 
-exports.logout = async (req, res, next) => {
-	try {
-		if (req.cookies.token) {
-			res.setHeader(
-				'set-Cookie',
-				cookie.serialize('token', '', {
-					httpOnly: true,
-					secure: true,
-					maxAge: 0,
-					sameSite: 'none',
-					path: '/'
-				})
-			);
-			res.status(200).json({ message: 'Logged out successfully' });
-		} else {
-			res.status(404).json({ message: 'token not in cookie' });
-		}
-	} catch (error) {
-		next(error);
-	}
-};
+// exports.logout = async (req, res, next) => {
+// 	try {
+// 		if (req.cookies.token) {
+// 			res.setHeader(
+// 				'set-Cookie',
+// 				cookie.serialize('token', '', {
+// 					httpOnly: true,
+// 					secure: true,
+// 					maxAge: 0,
+// 					sameSite: 'none',
+// 					path: '/'
+// 				})
+// 			);
+// 			res.status(200).json({ message: 'Logged out successfully' });
+// 		} else {
+// 			res.status(404).json({ message: 'token not in cookie' });
+// 		}
+// 	} catch (error) {
+// 		next(error);
+// 	}
+// };
 
 exports.updateUserToAdmin = async (req, res, next) => {
 	try {

@@ -8,7 +8,7 @@ router.post('/signup', authController.signup);
 
 // Route for user login
 router.post('/login', authController.login);
-router.post('/logout', authController.logout);
+// router.post('/logout', authController.logout);
 
 router.put('/updateBasic', authMiddleware.authenticateUser, authMiddleware.haveToken, authController.updateBasic);
 router.put('/updateSecurity', authMiddleware.authenticateUser, authMiddleware.haveToken, authController.updateSecurity);
