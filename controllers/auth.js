@@ -173,27 +173,37 @@ exports.updatePaymentInfo = async (req, res, next) => {
 	try {
 		const userId = req.user._id;
 		const { bemoBank, syriatelCash, haram } = req.body;
-		const user = await User.findByIdAndUpdate(
-			userId,
-			{ bemoBank, syriatelCash, haram },
-			{
-				new: true,
-				projection: {
-					_id: 1,
-					firstName: 1,
-					lastName: 1,
-					email: 1,
-					userName: 1,
-					role: 1,
-					Balance: 1,
-					totalIncome: 1,
-					totalPayment: 1,
-					bemoBank: 1,
-					syriatelCash: 1,
-					haram: 1
-				}
+		const data = {
+			bemoBank,
+			syriatelCash,
+			haram
+		};
+		Object.entries(data).filter(async ([ key, value ]) => {
+			if (value === undefined || value === '') {
+				delete data[key];
 			}
-		);
+			if (key === 'bemoBank' || key === 'syriatelCash' || key === 'haram') {
+				await User.updateOne({ _id: userId }, { $unset: { [key]: 1 } });
+			}
+		});
+		const user = await User.findByIdAndUpdate(userId, data, {
+			new: true,
+			projection: {
+				_id: 1,
+				firstName: 1,
+				lastName: 1,
+				email: 1,
+				userName: 1,
+				role: 1,
+				Balance: 1,
+				totalIncome: 1,
+				totalPayment: 1,
+				bemoBank: 1,
+				syriatelCash: 1,
+				haram: 1,
+				qrcode: 1
+			}
+		});
 		res.status(201).json({ success: true, message: 'User Payment information updated successfully', data: user });
 	} catch (error) {
 		next(error);
