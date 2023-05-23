@@ -27,13 +27,12 @@ const multer = require('multer');
 
 const storage = multer.memoryStorage();
 const dealerUpload = multer({ storage: storage });
-router.get('/getAllDealers', authMiddleware.authenticateUser, dealersController.getAllDealers);
+router.get('/getAllDealers', dealersController.getAllDealers);
 router.post(
 	'/addDealer',
 	authMiddleware.authenticateUser,
-	dealerUpload.single('dealerImgURL'),
-	authMiddleware.haveToken,
 	authMiddleware.authenticateAdmin,
+	dealerUpload.single('dealerImgURL'),
 	dealersController.addDealer
 );
 

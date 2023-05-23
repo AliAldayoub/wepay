@@ -3,18 +3,17 @@ const User = require('../models/user');
 
 exports.authenticateUser = async (req, res, next) => {
 	try {
-		// console.log(req.headers.authorization.split(' ')[1]);
 		// const token = req.cookies.token;
 		const token = req.headers.authorization.split(' ')[1];
 		if (!token) {
-			req.user = { role: 'guest' };
+			return res.status(401).json({ message: 'no token you can not access this route' });
 		} else {
 			const decodedToken = jwt.verify(token, process.env.SECRET_KEY);
 			const userId = decodedToken.userId;
 			const user = await User.findById(userId);
 			req.user = user;
+			next();
 		}
-		next();
 	} catch (error) {
 		res.status(401).json({ message: 'Invalid or expired token' });
 	}
@@ -36,14 +35,4 @@ exports.authenticateSeller = (req, res, next) => {
 			.json({ message: 'Forbidden: you do not have permission to perform this action as a Seller' });
 	}
 	next();
-};
-exports.haveToken = (req, res, next) => {
-	try {
-		if (req.user.role === 'guest') {
-			return res.status(401).json({ message: 'no token you can not access this route' });
-		}
-		next();
-	} catch (error) {
-		next(error);
-	}
 };

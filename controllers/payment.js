@@ -57,7 +57,7 @@ exports.getAllPayments = async (req, res, next) => {
 		const userId = req.user._id;
 		const perPage = 9;
 		const page = req.query.page || 1;
-		const count = await Payment.countDocuments({ user: userId }); // count documents for user id
+		const count = await Payment.countDocuments({ user: userId });
 		if (count == 0) {
 			res.status(400).json({ message: 'لا يوجد أي مدفوعات لعرضها' });
 		} else {

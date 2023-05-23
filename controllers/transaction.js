@@ -3,66 +3,54 @@ const Seller = require('../models/seller');
 const Activity = require('../models/activity');
 const DepositRequest = require('../models/depositRequest');
 const WithdrawRequest = require('../models/withdrawRequest');
-const multer = require('multer');
 const mongoose = require('mongoose');
-const fs = require('fs');
 const bcrypt = require('bcryptjs');
-
-const depositStorage = multer.diskStorage({
-	destination: function(req, file, cb) {
-		cb(null, 'uploads/depositProcesses');
-	},
-	filename: function(req, file, cb) {
-		cb(null, Date.now() + '-' + file.originalname);
-	}
-});
-const depositUpload = multer({ storage: depositStorage });
+const { uploadImage } = require('../util/backblazeB2');
 
 exports.depositRequest = async (req, res, next) => {
 	try {
 		const userId = req.user._id;
-		depositUpload.single('processImageUrl')(req, res, async function(err) {
-			if (err) {
-				console.error(err);
-				return res.status(500).json({ success: false, message: 'Error uploading file' });
-			}
-			const processImageUrl = req.file ? req.file.path : undefined;
 
-			const { processType, senderName, senderPhone, amountValue, processNumber } = req.body;
+		const processImageUrl = req.file ? req.file : undefined;
+		let fileURL;
+		if (processImageUrl) {
+			fileURL = await uploadImage(processImageUrl);
+		}
 
-			const session = await DepositRequest.startSession();
-			session.startTransaction();
-			const admin = await User.findOne({ role: 'admin' });
-			const activity = new Activity({
-				sender: admin._id,
-				reciver: userId,
-				senderAction: 'تحويل',
-				reciverAction: 'شحن',
-				amountValue,
-				status: false
-			});
-			await activity.save();
-			const depositRequest = new DepositRequest({
-				processType,
-				senderName,
-				senderPhone,
-				amountValue,
-				processNumber,
-				processImageUrl,
-				user: userId,
-				activity: activity._id
-			});
+		const { processType, senderName, senderPhone, amountValue, processNumber } = req.body;
 
-			await depositRequest.save({ session });
+		const session = await DepositRequest.startSession();
+		session.startTransaction();
+		const admin = await User.findOne({ role: 'admin' });
+		const activity = new Activity({
+			sender: admin._id,
+			reciver: userId,
+			senderAction: 'تحويل',
+			reciverAction: 'شحن',
+			amountValue,
+			status: false
+		});
+		await activity.save();
+		const depositRequest = new DepositRequest({
+			processType,
+			senderName,
+			senderPhone,
+			amountValue,
+			processNumber,
+			processImageUrl: fileURL !== undefined ? fileURL : process.env.defaultAvatar,
+			user: userId,
+			activity: activity._id
+		});
 
-			await session.commitTransaction();
-			session.endSession();
+		await depositRequest.save({ session });
 
-			return res.status(200).json({
-				success: true,
-				message: 'تم استلام طلبك بنجاح سوف يتم التحقق من العملية خلال 1 ساعة ',
-				data: depositRequest
-			});
+		await session.commitTransaction();
+		session.endSession();
+
+		return res.status(200).json({
+			success: true,
+			message: 'تم استلام طلبك بنجاح سوف يتم التحقق من العملية خلال 1 ساعة ',
+			data: depositRequest
 		});
 	} catch (error) {
 		await session.abortTransaction();

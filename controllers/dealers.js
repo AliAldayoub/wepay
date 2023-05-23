@@ -1,6 +1,7 @@
 const User = require('../models/user');
 const Dealer = require('../models/dealer');
-const b2 = require('../util/backblazeB2');
+const { uploadImage } = require('../util/backblazeB2');
+
 exports.getAllDealers = async (req, res, next) => {
 	try {
 		const perPage = 10;
@@ -31,25 +32,7 @@ exports.addDealer = async (req, res, next) => {
 		const dealerImgURL = req.file ? req.file : undefined;
 		let fileURL;
 		if (dealerImgURL) {
-			await b2.authorize();
-
-			const bucketId = process.env.bucketId;
-			const fileName = Date.now() + '-' + dealerImgURL.originalname;
-			const fileData = dealerImgURL.buffer;
-			const response = await b2.getUploadUrl(bucketId);
-
-			const uploadResponse = await b2.uploadFile({
-				uploadUrl: response.data.uploadUrl,
-				uploadAuthToken: response.data.authorizationToken,
-				bucketId: bucketId,
-				fileName: fileName,
-				data: fileData
-			});
-
-			fileURL = `${process.env.baseURL}/${process.env.bucketName}/${fileName}`;
-
-			// console.log(uploadResponse);
-			// const bucket = await b2.getBucketName(bucketId);
+			fileURL = await uploadImage(dealerImgURL);
 		}
 		const { fullName, address, phoneNumber, userName, city } = req.body;
 		const user = await User.findOne({ userName });

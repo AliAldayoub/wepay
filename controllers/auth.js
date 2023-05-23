@@ -1,35 +1,10 @@
 const User = require('../models/user');
-const cookie = require('cookie');
 const Seller = require('../models/seller');
 const bcrypt = require('bcryptjs');
 // const nodemailer = require('nodemailer');
 const jwt = require('jsonwebtoken');
-const multer = require('multer');
-const fs = require('fs');
-const db = require('../util/database');
 const Activity = require('../models/activity');
-// const profileStorage = multer.diskStorage({
-// 	destination: function(req, file, cb) {
-// 		cb(null, 'uploads/profilePictures');
-// 	},
-// 	filename: function(req, file, cb) {
-// 		cb(null, Date.now() + '-' + file.originalname);
-// 	}
-// });
-
-// const profileUpload = multer({ storage: profileStorage });
-
-// const sellerStorage = multer.diskStorage({
-// 	destination: function(req, file, cb) {
-// 		cb(null, 'uploads/storeImages');
-// 	},
-// 	filename: function(req, file, cb) {
-// 		cb(null, Date.now() + '-' + file.originalname);
-// 	}
-// });
-
-// const sellerUpload = multer({ storage: sellerStorage });
-
+const { uploadImage } = require('../util/backblazeB2');
 exports.signup = async (req, res, next) => {
 	try {
 		const { firstName, lastName, middleName, email, userName, phoneNumber, password, pin } = req.body;
@@ -51,26 +26,18 @@ exports.signup = async (req, res, next) => {
 			password,
 			pin: hashedPin
 		});
-		// const activationCode = Math.floor(Math.random() * 900000) + 100000;
-		// const mailOptions = {
-		// 	from: 'WE PAY',
-		// 	to: user.email,
-		// 	subject: 'Activate your account',
-		// 	text: `Your activation code is ${activationCode}.`
-		// };
-		// await transporter.sendMail(mailOptions, (error, info) => {
-		// 	if (error) console.log(error);
-		// 	else console.log('mail sended');
-		// });
+		// to  sending email here .......
 
+		// end sending email
 		await user.save();
 		const token = jwt.sign({ userId: user._id }, process.env.SECRET_KEY);
+		console.log(user.imgURL);
 		return res.status(201).json({
 			message: 'User created. Check your email for activation code.',
 			success: true,
 			role: user.role,
-			token,
-			imgURL: user.imgURL
+			imgURL: user.imgURL,
+			token
 		});
 	} catch (error) {
 		next(error);
@@ -98,7 +65,6 @@ exports.login = async (req, res, next) => {
 
 		const token = jwt.sign({ userId: user._id }, process.env.SECRET_KEY);
 
-		user = await User.findOne({ email }, '-password -pin');
 		res
 			.status(200)
 			.json({ success: true, message: 'login successfully', role: user.role, token, imgURL: user.imgURL });
@@ -111,37 +77,18 @@ exports.updateBasic = async (req, res, next) => {
 	try {
 		const userId = req.user._id;
 		const { firstName, lastName, middleName, phoneNumber } = req.body;
-		const imgURL = req.file ? req.file.path : undefined;
+		const imgURL = req.file ? req.file : undefined;
 		let fileURL;
 		if (imgURL) {
-			await b2.authorize();
-
-			const bucketId = process.env.bucketId;
-			const fileName = Date.now() + '-' + imgURL.originalname;
-			const fileData = imgURL.buffer;
-			const response = await b2.getUploadUrl(bucketId);
-
-			const uploadResponse = await b2.uploadFile({
-				uploadUrl: response.data.uploadUrl,
-				uploadAuthToken: response.data.authorizationToken,
-				bucketId: bucketId,
-				fileName: fileName,
-				data: fileData
-			});
-
-			fileURL = `${process.env.baseURL}/${process.env.bucketName}/${fileName}`;
-
-			// console.log(uploadResponse);
-			// const bucket = await b2.getBucketName(bucketId);
+			fileURL = await uploadImage(imgURL);
 		}
+		console.log(typeof fileURL, fileURL);
 		const user = await User.findByIdAndUpdate(
 			userId,
-			{ firstName, lastName, middleName, phoneNumber, imgURL: fileURL },
+			{ firstName, lastName, middleName, phoneNumber, imgURL: fileURL !== undefined ? fileURL : this.imgURL },
 			{ new: true }
 		);
-		res
-			.status(200)
-			.json({ success: true, message: 'User information updated successfully', data: user, role: user.role });
+		res.status(201).json({ success: true, message: 'User information updated successfully', data: user });
 	} catch (error) {
 		next(error);
 	}
@@ -164,9 +111,8 @@ exports.updateSecurity = async (req, res, next) => {
 		if (newPassword !== undefined) user.password = newPassword;
 		user.save();
 		user = await User.findById(userId, '-password -pin');
-		res.status(201).json({ message: 'security field updated', user, role: user.role });
+		res.status(201).json({ message: 'security field updated', user });
 	} catch (error) {
-		console.log(error);
 		next(error);
 	}
 };
@@ -188,24 +134,7 @@ exports.updatePaymentInfo = async (req, res, next) => {
 				await User.updateOne({ _id: userId }, { $unset: { [key]: 1 } });
 			}
 		});
-		const user = await User.findByIdAndUpdate(userId, data, {
-			new: true,
-			projection: {
-				_id: 1,
-				firstName: 1,
-				lastName: 1,
-				email: 1,
-				userName: 1,
-				role: 1,
-				Balance: 1,
-				totalIncome: 1,
-				totalPayment: 1,
-				bemoBank: 1,
-				syriatelCash: 1,
-				haram: 1,
-				qrcode: 1
-			}
-		});
+		const user = await User.findByIdAndUpdate(userId, data, { new: true });
 		res.status(201).json({ success: true, message: 'User Payment information updated successfully', data: user });
 	} catch (error) {
 		next(error);
@@ -216,28 +145,10 @@ exports.updateUserToSeller = async (req, res, next) => {
 	try {
 		const userId = req.user._id;
 		const { storeName, address, coo, city, storeType } = req.body;
-		const storeImgURL = req.file ? req.file.path : undefined;
+		const storeImgURL = req.file ? req.file : undefined;
 		let fileURL;
 		if (storeImgURL) {
-			await b2.authorize();
-
-			const bucketId = process.env.bucketId;
-			const fileName = Date.now() + '-' + storeImgURL.originalname;
-			const fileData = storeImgURL.buffer;
-			const response = await b2.getUploadUrl(bucketId);
-
-			const uploadResponse = await b2.uploadFile({
-				uploadUrl: response.data.uploadUrl,
-				uploadAuthToken: response.data.authorizationToken,
-				bucketId: bucketId,
-				fileName: fileName,
-				data: fileData
-			});
-
-			fileURL = `${process.env.baseURL}/${process.env.bucketName}/${fileName}`;
-
-			// console.log(uploadResponse);
-			// const bucket = await b2.getBucketName(bucketId);
+			fileURL = await uploadImage(storeImgURL);
 		}
 		const existUser = await User.findById(userId);
 		if (existUser.Balance < 5000) {
@@ -271,7 +182,7 @@ exports.updateUserToSeller = async (req, res, next) => {
 				coo,
 				city,
 				storeType,
-				storeImgURL: fileURL
+				storeImgURL: fileURL !== undefined ? fileURL : process.env.defaultAvatar
 			});
 			await seller.save();
 
@@ -285,7 +196,8 @@ exports.updateUserToSeller = async (req, res, next) => {
 			res.status(200).json({
 				success: true,
 				message: 'Seller information created successfully',
-				data: { seller, updatedUser, role: updatedUser.role }
+				seller,
+				updatedUser
 			});
 		}
 	} catch (error) {
