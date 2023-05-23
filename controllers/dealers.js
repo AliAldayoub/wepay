@@ -1,15 +1,9 @@
 const User = require('../models/user');
 const Dealer = require('../models/dealer');
-const B2 = require('backblaze-b2');
-const b2 = new B2({
-	applicationKeyId: 'efb748089fbb',
-	applicationKey: '0051f44073512386ff287e9baa556fc0a08e6aa064'
-});
-
+const b2 = require('../util/backblazeB2');
 exports.getAllDealers = async (req, res, next) => {
 	try {
 		const perPage = 10;
-		const page = req.query.page || 1;
 		const count = await Dealer.countDocuments();
 		const user = await User.findOne({ _id: req.user._id }, '-password -pin');
 		if (count == 0) {
