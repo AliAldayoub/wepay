@@ -36,7 +36,9 @@ exports.addDealer = async (req, res, next) => {
 		}
 		const { fullName, address, phoneNumber, userName, city } = req.body;
 		const user = await User.findOne({ userName });
-		const accountUser = await User.findOne({ _id: req.user._id }, '-password -pin');
+		user.role = 'dealer';
+		await user.save();
+		// check if admin or seller..........
 		const dealer = new Dealer({
 			user: user._id,
 			fullName,
@@ -46,7 +48,7 @@ exports.addDealer = async (req, res, next) => {
 			dealerImgURL: fileURL !== undefined ? fileURL : process.env.defaultAvatar
 		});
 		dealer.save();
-		res.status(200).json({ success: true, message: 'dealer add  successfully', data: dealer, user: accountUser });
+		res.status(200).json({ success: true, message: 'dealer add  successfully', data: dealer });
 	} catch (error) {
 		next(error);
 	}

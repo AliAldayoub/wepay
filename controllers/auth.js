@@ -89,7 +89,7 @@ exports.updateBasic = async (req, res, next) => {
 			{ firstName, lastName, middleName, phoneNumber, imgURL: fileURL !== undefined ? fileURL : this.imgURL },
 			{ new: true }
 		);
-		res.status(201).json({ success: true, message: 'User information updated successfully', data: user });
+		res.status(201).json({ success: true, message: 'User information updated successfully', user });
 	} catch (error) {
 		next(error);
 	}
@@ -136,7 +136,7 @@ exports.updatePaymentInfo = async (req, res, next) => {
 			}
 		});
 		const user = await User.findByIdAndUpdate(userId, data, { new: true });
-		res.status(201).json({ success: true, message: 'User Payment information updated successfully', data: user });
+		res.status(201).json({ success: true, message: 'User Payment information updated successfully', user });
 	} catch (error) {
 		next(error);
 	}
@@ -198,7 +198,7 @@ exports.updateUserToSeller = async (req, res, next) => {
 				success: true,
 				message: 'Seller information created successfully',
 				seller,
-				updatedUser
+				user: updatedUser
 			});
 		}
 	} catch (error) {
