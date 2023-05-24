@@ -8,6 +8,8 @@ const bcrypt = require('bcryptjs');
 const { uploadImage } = require('../util/backblazeB2');
 
 exports.getDashboard = async (req, res, next) => {
+	const userId = req.user._id;
+
 	try {
 	} catch (error) {
 		next(error);
