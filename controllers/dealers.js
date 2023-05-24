@@ -6,16 +6,13 @@ exports.getAllDealers = async (req, res, next) => {
 	try {
 		const perPage = 10;
 		const count = await Dealer.countDocuments();
-		const user = await User.findOne({ _id: req.user._id }, '-password -pin');
 		if (count == 0) {
-			res.status(200).json({ message: 'no dealer in site for now', role: req.user.role, user });
+			res.status(200).json({ message: 'no dealer in site for now' });
 		} else {
 			const dealers = await Dealer.find();
 			const totalPages = Math.ceil(count / perPage);
 
 			res.status(201).json({
-				user,
-				role: req.user.role,
 				success: true,
 				message: 'All dealers Ae retrieved successfully',
 				data: dealers,
