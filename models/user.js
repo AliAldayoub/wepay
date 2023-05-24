@@ -9,7 +9,7 @@ const userSchema = new Schema(
 		email: { type: String, required: true, unique: true },
 		userName: { type: String, required: true, unique: true },
 		phoneNumber: { type: String },
-		imgURL: { type: String, default: '' },
+		imgURL: { type: String },
 		password: { type: String, required: true },
 		pin: { type: String, required: true },
 		role: { type: String, enum: [ 'user', 'admin', 'seller', 'dealer' ], default: 'user' },

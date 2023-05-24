@@ -7,6 +7,12 @@ const mongoose = require('mongoose');
 const bcrypt = require('bcryptjs');
 const { uploadImage } = require('../util/backblazeB2');
 
+exports.getDashboard = async (req, res, next) => {
+	try {
+	} catch (error) {
+		next(error);
+	}
+};
 exports.depositRequest = async (req, res, next) => {
 	try {
 		const userId = req.user._id;

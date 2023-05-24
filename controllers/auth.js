@@ -15,7 +15,7 @@ exports.signup = async (req, res, next) => {
 		}
 
 		const hashedPin = await bcrypt.hash(pin, 10);
-
+		console.log(process.env.defaultAvatar);
 		const user = new User({
 			firstName,
 			lastName,
