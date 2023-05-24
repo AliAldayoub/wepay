@@ -24,7 +24,8 @@ exports.signup = async (req, res, next) => {
 			userName,
 			phoneNumber,
 			password,
-			pin: hashedPin
+			pin: hashedPin,
+			imgURL: process.env.defaultAvatar
 		});
 		// to  sending email here .......
 
