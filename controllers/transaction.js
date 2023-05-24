@@ -6,11 +6,99 @@ const WithdrawRequest = require('../models/withdrawRequest');
 const mongoose = require('mongoose');
 const bcrypt = require('bcryptjs');
 const { uploadImage } = require('../util/backblazeB2');
-
-exports.getDashboard = async (req, res, next) => {
-	const userId = req.user._id;
-
+const Payment = require('../models/payment');
+exports.getShipping = async (req, res, next) => {
 	try {
+		const userId = req.user._id;
+		const user = await User.findById(userId, '-password -pin');
+		const actions = await Activity.find(
+			{
+				$or: [ { sender: userId, senderAction: 'تحويل' }, { sender: userId, senderAction: 'دفع المتجر' } ]
+			},
+			'createdAt amountValue senderAction senderDetails'
+		)
+			.sort({ createdAt: -1 })
+			.limit(5);
+
+		res.status(200).json({
+			success: true,
+			message: 'last actions is up-to-date and retrieved successfully',
+			balance: user.Balance,
+			totalPayment: user.totalPayment,
+			totalIncome: user.totalIncome,
+			actions
+		});
+	} catch (error) {
+		next(error);
+	}
+};
+exports.getDashboard = async (req, res, next) => {
+	try {
+		const userId = req.user._id;
+		const user = await User.findById(userId, '-password -pin');
+
+		ActivityFilter = { $or: [ { sender: userId }, { reciver: userId } ] };
+
+		const countActivities = await Activity.countDocuments(ActivityFilter);
+		let lastActivities;
+		if (countActivities !== 0) {
+			lastActivities = await Activity.find(
+				ActivityFilter,
+				'senderAction amountValue senderDetails reciverDetails createdAt'
+			)
+				.sort({ createdAt: -1 })
+				.limit(5);
+			// when you need to fetch the data from lastActivities first check the senderAction if is in [ 'دفع المتجر', 'تحويل', 'سحب' ] use the senderDetails else use reciverDetails
+		}
+
+		const countPayment = await Payment.countDocuments({ user: userId });
+		let lastPayments;
+		if (countPayment !== 0) {
+			lastPayments = await Payment.find({ user: userId })
+				.populate('user', 'firstName lastName')
+				.populate('paymentForUser', 'firstName lastName qrcode')
+				.sort({ paymentDate: -1 })
+				.limit(3);
+		}
+		// retrive chart information ....
+		const chartData = await Activity.aggregate([
+			{
+				$match: {
+					sender: userId,
+					senderAction: { $in: [ 'دفع المتجر', 'تحويل', 'سحب' ] },
+					createdAt: {
+						$gte: new Date('2023-01-01'),
+						$lt: new Date('2024-01-01')
+					}
+				}
+			},
+			{
+				$project: {
+					month: { $month: '$createdAt' },
+					amountValue: 1
+				}
+			},
+			{
+				$group: {
+					_id: '$month',
+					totalAmount: { $sum: '$amountValue' }
+				}
+			},
+			{
+				$sort: { _id: 1 }
+			}
+		]);
+
+		res.status(200).json({
+			success: true,
+			message: 'dashboard retrived successfully',
+			lastActivities,
+			lastPayments,
+			balance: user.Balance,
+			totalPayment: user.totalPayment,
+			totalIncome: user.totalIncome,
+			chartData
+		});
 	} catch (error) {
 		next(error);
 	}

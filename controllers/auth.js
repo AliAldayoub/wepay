@@ -83,7 +83,6 @@ exports.updateBasic = async (req, res, next) => {
 		if (imgURL) {
 			fileURL = await uploadImage(imgURL);
 		}
-		console.log(typeof fileURL, fileURL);
 		const user = await User.findByIdAndUpdate(
 			userId,
 			{ firstName, lastName, middleName, phoneNumber, imgURL: fileURL !== undefined ? fileURL : this.imgURL },

@@ -4,11 +4,13 @@ const authMiddleware = require('../middleware/authMiddleware');
 const transactionController = require('../controllers/transaction');
 
 const multer = require('multer');
-
 const storage = multer.memoryStorage();
 const upload = multer({ storage: storage });
 
+router.get('/getShipping', authMiddleware.authenticateUser, transactionController.getShipping);
+
 router.get('/getDashboard', authMiddleware.authenticateUser, transactionController.getDashboard);
+
 router.post(
 	'/depositRequest',
 	authMiddleware.authenticateUser,
