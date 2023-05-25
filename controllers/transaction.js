@@ -7,6 +7,7 @@ const mongoose = require('mongoose');
 const bcrypt = require('bcryptjs');
 const { uploadImage } = require('../util/backblazeB2');
 const Payment = require('../models/payment');
+
 exports.getShipping = async (req, res, next) => {
 	try {
 		const userId = req.user._id;
@@ -26,6 +27,7 @@ exports.getShipping = async (req, res, next) => {
 			balance: user.Balance,
 			totalPayment: user.totalPayment,
 			totalIncome: user.totalIncome,
+			role: user.role,
 			actions
 		});
 	} catch (error) {
@@ -97,6 +99,7 @@ exports.getDashboard = async (req, res, next) => {
 			balance: user.Balance,
 			totalPayment: user.totalPayment,
 			totalIncome: user.totalIncome,
+			role: user.role,
 			chartData
 		});
 	} catch (error) {
