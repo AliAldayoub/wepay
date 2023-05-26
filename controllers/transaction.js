@@ -126,6 +126,8 @@ exports.depositRequest = async (req, res, next) => {
 			reciver: userId,
 			senderAction: 'تحويل',
 			reciverAction: 'شحن',
+			senderDetails: `تحويل رصيد لطلب شحن من حساب ${req.user.firstName} ${req.user.lastName} `,
+			reciverDetails: `طلب شحن رصيد الحساب`,
 			amountValue,
 			status: false
 		});
@@ -246,7 +248,7 @@ exports.transferMoney = async (req, res, next) => {
 		if (!isPinValid) {
 			return res.status(401).json({
 				success: false,
-				message: 'Invalid PIN'
+				message: 'رمز الحماية الخاص بك غير صحيح يرجى التأكد منه'
 			});
 		}
 
@@ -260,7 +262,7 @@ exports.transferMoney = async (req, res, next) => {
 		await recipientUser.save({ session });
 		let senderAction, reciverAction, senderDetails, reciverDetails;
 
-		if (recipientUser.role === 1) {
+		if (recipientUser.role === 'seller') {
 			const seller = await Seller.findOne({ user: recipientUser._id });
 			const storeName = seller.storeName;
 
