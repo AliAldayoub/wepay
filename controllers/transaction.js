@@ -172,8 +172,8 @@ exports.withdrawRequest = async (req, res, next) => {
 		const user = await User.findById(userId).session(session);
 		const admin = await User.findOne({ role: 'admin' }).session(session);
 
-		if (user.balance < amountValue) {
-			return res.status(200).json({
+		if (user.Balance < amountValue) {
+			return res.status(401).json({
 				success: false,
 				message: 'عذراً رصيدك الحالي لا يكفي لإجراء هذه العملية'
 			});
@@ -234,20 +234,20 @@ exports.transferMoney = async (req, res, next) => {
 		const { qrcode, amountValue, pin } = req.body;
 		const recipientUser = await User.findOne({ qrcode }).session(session);
 		if (!recipientUser) {
-			return res.status(200).json({
+			return res.status(401).json({
 				success: false,
 				message: 'عذراً إن الرمز المدخل غير صحيح , يرجى التأكد من صحة الرمز والمحاولة مرة أخرى'
 			});
 		}
 		if (user.Balance < amountValue) {
-			return res.status(200).json({
+			return res.status(401).json({
 				success: false,
 				message: 'عذراً لا تملك الرصيد الكافي لإجراء هذه العملية , قم بشحن حسابك والمحاولة من جديد '
 			});
 		}
 		const isPinValid = await bcrypt.compare(pin, user.pin);
 		if (!isPinValid) {
-			return res.status(200).json({
+			return res.status(401).json({
 				success: false,
 				message: 'رمز الحماية الخاص بك غير صحيح يرجى التأكد منه'
 			});
