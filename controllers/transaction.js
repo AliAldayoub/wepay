@@ -106,6 +106,7 @@ exports.getDashboard = async (req, res, next) => {
 		next(error);
 	}
 };
+
 exports.depositRequest = async (req, res, next) => {
 	try {
 		const userId = req.user._id;
@@ -172,7 +173,7 @@ exports.withdrawRequest = async (req, res, next) => {
 		const admin = await User.findOne({ role: 'admin' }).session(session);
 
 		if (user.balance < amountValue) {
-			return res.status(400).json({
+			return res.status(200).json({
 				success: false,
 				message: 'عذراً رصيدك الحالي لا يكفي لإجراء هذه العملية'
 			});
@@ -233,20 +234,20 @@ exports.transferMoney = async (req, res, next) => {
 		const { qrcode, amountValue, pin } = req.body;
 		const recipientUser = await User.findOne({ qrcode }).session(session);
 		if (!recipientUser) {
-			return res.status(402).json({
+			return res.status(200).json({
 				success: false,
 				message: 'عذراً إن الرمز المدخل غير صحيح , يرجى التأكد من صحة الرمز والمحاولة مرة أخرى'
 			});
 		}
 		if (user.Balance < amountValue) {
-			return res.status(402).json({
+			return res.status(200).json({
 				success: false,
 				message: 'عذراً لا تملك الرصيد الكافي لإجراء هذه العملية , قم بشحن حسابك والمحاولة من جديد '
 			});
 		}
 		const isPinValid = await bcrypt.compare(pin, user.pin);
 		if (!isPinValid) {
-			return res.status(401).json({
+			return res.status(200).json({
 				success: false,
 				message: 'رمز الحماية الخاص بك غير صحيح يرجى التأكد منه'
 			});
@@ -331,7 +332,7 @@ exports.getActions = async (req, res, next) => {
 		const count = await Activity.countDocuments(filter);
 		const totalPages = Math.ceil(count / perPage);
 		if (count == 0) {
-			res.status(400).json({ message: 'لا يوجد أي أنشطة لعرضها' });
+			return res.status(200).json({ success: false, message: 'لا يوجد أي أنشطة لعرضها' });
 		} else {
 			return res.status(200).json({
 				success: true,
