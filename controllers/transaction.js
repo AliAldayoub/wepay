@@ -24,10 +24,7 @@ exports.getShipping = async (req, res, next) => {
 		res.status(200).json({
 			success: true,
 			message: 'last actions is up-to-date and retrieved successfully',
-			balance: user.Balance,
-			totalPayment: user.totalPayment,
-			totalIncome: user.totalIncome,
-			role: user.role,
+			user,
 			actions
 		});
 	} catch (error) {
@@ -96,10 +93,7 @@ exports.getDashboard = async (req, res, next) => {
 			message: 'dashboard retrived successfully',
 			lastActivities,
 			lastPayments,
-			balance: user.Balance,
-			totalPayment: user.totalPayment,
-			totalIncome: user.totalIncome,
-			role: user.role,
+			user,
 			chartData
 		});
 	} catch (error) {
@@ -148,12 +142,13 @@ exports.depositRequest = async (req, res, next) => {
 
 		await session.commitTransaction();
 		session.endSession();
-
+		const user = await User.findById(userId, '-password -pin');
 		return res.status(200).json({
 			success: true,
 			message: 'تم استلام طلبك بنجاح سوف يتم التحقق من العملية خلال 1 ساعة ',
 			data: depositRequest,
-			activity
+			activity,
+			user
 		});
 	} catch (error) {
 		await session.abortTransaction();
@@ -216,7 +211,8 @@ exports.withdrawRequest = async (req, res, next) => {
 			success: true,
 			message: 'تم استلام طلبك بنجاح وسحب الرصيد من الحساب سوف يتم ارسال المبلغ خلال مدة أقصاها 24 ساعة',
 			data: withdrawRequest,
-			activity
+			activity,
+			user
 		});
 	} catch (error) {
 		await session.abortTransaction();
@@ -384,7 +380,13 @@ exports.depositResponse = async (req, res, next) => {
 		session.endSession();
 		res
 			.status(200)
-			.json({ success: true, message: 'تم التحويل بنجاح وخصم المبلغ من حسابك ', sender, reciver, activity });
+			.json({
+				success: true,
+				message: 'تم التحويل بنجاح وخصم المبلغ من حسابك ',
+				user: sender,
+				reciver,
+				activity
+			});
 	} catch (error) {
 		await session.abortTransaction();
 		session.endSession();
