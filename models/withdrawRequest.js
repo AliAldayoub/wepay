@@ -11,8 +11,19 @@ const withdrawRequestSchema = new Schema(
 				return this.processType === 'سحب-هرم';
 			}
 		},
+		accountID: {
+			type: String,
+			required: function() {
+				return this.processType === 'سحب-بيمو';
+			}
+		},
 		amountValue: { type: Number, required: true },
-		reciverPhone: { type: String, required: true },
+		reciverPhone: {
+			type: String,
+			required: function() {
+				return this.processType === 'سحب-هرم' || this.processType === 'سحب-كاش';
+			}
+		},
 		reciverCity: { type: String, required: true },
 		activity: { type: Schema.Types.ObjectId, ref: 'Activity', required: true }
 	},

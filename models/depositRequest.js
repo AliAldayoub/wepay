@@ -13,12 +13,19 @@ const depositRequestSchema = new Schema(
 		senderPhone: { type: String, required: true },
 		amountValue: { type: Number, required: true },
 		processNumber: { type: String, required: true },
+		accountID: {
+			type: String,
+			required: function() {
+				return this.processType === 'شحن-بيمو';
+			}
+		},
 		processImageUrl: {
 			type: String,
 			required: function() {
 				return this.processType === 'شحن-هرم';
 			}
 		},
+
 		user: { type: Schema.Types.ObjectId, ref: 'User', required: true },
 		activity: { type: Schema.Types.ObjectId, ref: 'Activity', required: true }
 	},

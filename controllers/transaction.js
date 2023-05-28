@@ -106,7 +106,7 @@ exports.depositRequest = async (req, res, next) => {
 			fileURL = await uploadImage(processImageUrl);
 		}
 
-		const { processType, senderName, senderPhone, processNumber } = req.body;
+		const { processType, senderName, senderPhone, processNumber, accountID } = req.body;
 		let amountValue = parseInt(req.body.amountValue);
 		const session = await DepositRequest.startSession();
 		session.startTransaction();
@@ -123,6 +123,7 @@ exports.depositRequest = async (req, res, next) => {
 		});
 		await activity.save();
 		const depositRequest = new DepositRequest({
+			accountID,
 			processType,
 			senderName,
 			senderPhone,
@@ -153,7 +154,7 @@ exports.depositRequest = async (req, res, next) => {
 	}
 };
 exports.withdrawRequest = async (req, res, next) => {
-	const { processType, reciverName, reciverPhone, reciverCity } = req.body;
+	const { processType, reciverName, reciverPhone, reciverCity, accountID } = req.body;
 	let amountValue = parseInt(req.body.amountValue);
 	const userId = req.user._id;
 
@@ -189,6 +190,7 @@ exports.withdrawRequest = async (req, res, next) => {
 		});
 		await activity.save();
 		const withdrawRequest = new WithdrawRequest({
+			accountID,
 			amountValue,
 			processType,
 			reciverName,
