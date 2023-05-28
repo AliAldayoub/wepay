@@ -118,7 +118,7 @@ exports.depositRequest = async (req, res, next) => {
 		}
 
 		const { processType, senderName, senderPhone, amountValue, processNumber } = req.body;
-
+		amountValue = parseInt(amountValue);
 		const session = await DepositRequest.startSession();
 		session.startTransaction();
 		const admin = await User.findOne({ role: 'admin' });
@@ -152,7 +152,8 @@ exports.depositRequest = async (req, res, next) => {
 		return res.status(200).json({
 			success: true,
 			message: 'تم استلام طلبك بنجاح سوف يتم التحقق من العملية خلال 1 ساعة ',
-			data: depositRequest
+			data: depositRequest,
+			activity
 		});
 	} catch (error) {
 		await session.abortTransaction();
@@ -164,7 +165,7 @@ exports.depositRequest = async (req, res, next) => {
 exports.withdrawRequest = async (req, res, next) => {
 	const { amountValue, processType, reciverName, reciverPhone, reciverCity } = req.body;
 	const userId = req.user._id;
-
+	amountValue = parseInt(amountValue);
 	let session = await mongoose.startSession();
 	session.startTransaction();
 
@@ -213,7 +214,8 @@ exports.withdrawRequest = async (req, res, next) => {
 		return res.status(200).json({
 			success: true,
 			message: 'تم استلام طلبك بنجاح وسحب الرصيد من الحساب سوف يتم ارسال المبلغ خلال مدة أقصاها 24 ساعة',
-			data: withdrawRequest
+			data: withdrawRequest,
+			activity
 		});
 	} catch (error) {
 		await session.abortTransaction();
@@ -232,6 +234,8 @@ exports.transferMoney = async (req, res, next) => {
 		const userId = req.user._id;
 		const user = await User.findById(userId).session(session);
 		const { qrcode, amountValue, pin } = req.body;
+		amountValue = parseInt(amountValue);
+
 		const recipientUser = await User.findOne({ qrcode }).session(session);
 		if (!recipientUser) {
 			return res.status(401).json({
@@ -294,7 +298,7 @@ exports.transferMoney = async (req, res, next) => {
 		await session.commitTransaction();
 		session.endSession();
 
-		res.status(200).json({ success: true, message: 'تم التحويل بنجاح وخصم المبلغ من حسابك ' });
+		res.status(200).json({ success: true, message: 'تم التحويل بنجاح وخصم المبلغ من حسابك ', activity });
 	} catch (error) {
 		await session.abortTransaction();
 		session.endSession();
@@ -397,7 +401,7 @@ exports.withdrawResponse = async (req, res, next) => {
 		activity.status = true;
 		await activity.save();
 
-		res.status(201).json({ success: true, message: ' تمت العملية بنجاح ' });
+		res.status(201).json({ success: true, message: ' تمت العملية بنجاح ', activity });
 	} catch (error) {
 		next(error);
 	}
