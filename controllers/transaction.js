@@ -298,7 +298,7 @@ exports.transferMoney = async (req, res, next) => {
 		await session.commitTransaction();
 		session.endSession();
 
-		res.status(200).json({ success: true, message: 'تم التحويل بنجاح وخصم المبلغ من حسابك ', activity });
+		res.status(200).json({ success: true, message: 'تم التحويل بنجاح وخصم المبلغ من حسابك ', activity, user });
 	} catch (error) {
 		await session.abortTransaction();
 		session.endSession();
