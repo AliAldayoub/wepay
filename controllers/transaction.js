@@ -16,7 +16,7 @@ exports.getShipping = async (req, res, next) => {
 			{
 				$or: [ { sender: userId, senderAction: 'تحويل' }, { sender: userId, senderAction: 'دفع المتجر' } ]
 			},
-			'createdAt amountValue senderAction senderDetails'
+			'-reciver -reciverDetails'
 		)
 			.sort({ createdAt: -1 })
 			.limit(5);
@@ -41,12 +41,7 @@ exports.getDashboard = async (req, res, next) => {
 		const countActivities = await Activity.countDocuments(ActivityFilter);
 		let lastActivities;
 		if (countActivities !== 0) {
-			lastActivities = await Activity.find(
-				ActivityFilter,
-				'senderAction amountValue senderDetails reciverDetails createdAt'
-			)
-				.sort({ createdAt: -1 })
-				.limit(5);
+			lastActivities = await Activity.find(ActivityFilter).sort({ createdAt: -1 }).limit(5);
 			// when you need to fetch the data from lastActivities first check the senderAction if is in [ 'دفع المتجر', 'تحويل', 'سحب' ] use the senderDetails else use reciverDetails
 		}
 
@@ -378,15 +373,13 @@ exports.depositResponse = async (req, res, next) => {
 		await activity.save();
 		await session.commitTransaction();
 		session.endSession();
-		res
-			.status(200)
-			.json({
-				success: true,
-				message: 'تم التحويل بنجاح وخصم المبلغ من حسابك ',
-				user: sender,
-				reciver,
-				activity
-			});
+		res.status(200).json({
+			success: true,
+			message: 'تم التحويل بنجاح وخصم المبلغ من حسابك ',
+			user: sender,
+			reciver,
+			activity
+		});
 	} catch (error) {
 		await session.abortTransaction();
 		session.endSession();
