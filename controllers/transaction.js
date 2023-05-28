@@ -117,8 +117,8 @@ exports.depositRequest = async (req, res, next) => {
 			fileURL = await uploadImage(processImageUrl);
 		}
 
-		const { processType, senderName, senderPhone, amountValue, processNumber } = req.body;
-		amountValue = parseInt(amountValue);
+		const { processType, senderName, senderPhone, processNumber } = req.body;
+		let amountValue = parseInt(req.body.amountValue);
 		const session = await DepositRequest.startSession();
 		session.startTransaction();
 		const admin = await User.findOne({ role: 'admin' });
@@ -163,9 +163,10 @@ exports.depositRequest = async (req, res, next) => {
 	}
 };
 exports.withdrawRequest = async (req, res, next) => {
-	const { amountValue, processType, reciverName, reciverPhone, reciverCity } = req.body;
+	const { processType, reciverName, reciverPhone, reciverCity } = req.body;
+	let amountValue = parseInt(req.body.amountValue);
 	const userId = req.user._id;
-	amountValue = parseInt(amountValue);
+
 	let session = await mongoose.startSession();
 	session.startTransaction();
 
@@ -233,9 +234,8 @@ exports.transferMoney = async (req, res, next) => {
 
 		const userId = req.user._id;
 		const user = await User.findById(userId).session(session);
-		const { qrcode, amountValue, pin } = req.body;
-		amountValue = parseInt(amountValue);
-
+		const { qrcode, pin } = req.body;
+		let amountValue = parseInt(req.body.amountValue);
 		const recipientUser = await User.findOne({ qrcode }).session(session);
 		if (!recipientUser) {
 			return res.status(401).json({
