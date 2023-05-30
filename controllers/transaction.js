@@ -151,7 +151,7 @@ exports.depositRequest = async (req, res, next) => {
 	}
 };
 exports.withdrawRequest = async (req, res, next) => {
-	const { processType, reciverName, reciverPhone, reciverCity, accountID } = req.body;
+	const { processType, reciverName, reciverPhone, reciverCity, accountID, pin } = req.body;
 	let amountValue = parseInt(req.body.amountValue);
 	const userId = req.user._id;
 
@@ -161,7 +161,13 @@ exports.withdrawRequest = async (req, res, next) => {
 	try {
 		const user = await User.findById(userId).session(session);
 		const admin = await User.findOne({ role: 'admin' }).session(session);
-
+		const isPinValid = await bcrypt.compare(pin, user.pin);
+		if (!isPinValid) {
+			return res.status(401).json({
+				success: false,
+				message: 'رمز الحماية الخاص بك غير صحيح يرجى التأكد منه'
+			});
+		}
 		if (user.Balance < amountValue) {
 			return res.status(401).json({
 				success: false,
