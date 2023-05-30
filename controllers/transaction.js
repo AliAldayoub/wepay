@@ -7,8 +7,6 @@ const mongoose = require('mongoose');
 const bcrypt = require('bcryptjs');
 const { uploadImage } = require('../util/backblazeB2');
 const Payment = require('../models/payment');
-const session = mongoose.startSession();
-
 exports.getShipping = async (req, res, next) => {
 	try {
 		const userId = req.user._id;
@@ -98,6 +96,7 @@ exports.getDashboard = async (req, res, next) => {
 };
 
 exports.depositRequest = async (req, res, next) => {
+	const session = await DepositRequest.startSession();
 	try {
 		const userId = req.user._id;
 
@@ -109,7 +108,6 @@ exports.depositRequest = async (req, res, next) => {
 
 		const { processType, senderName, senderPhone, processNumber, accountID } = req.body;
 		let amountValue = parseInt(req.body.amountValue);
-		const session = await DepositRequest.startSession();
 		session.startTransaction();
 		const admin = await User.findOne({ role: 'admin' });
 		const activity = new Activity({
@@ -148,9 +146,7 @@ exports.depositRequest = async (req, res, next) => {
 			user
 		});
 	} catch (error) {
-		await session.abortTransaction();
 		session.endSession();
-
 		next(error);
 	}
 };
