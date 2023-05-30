@@ -158,7 +158,7 @@ exports.updateUserToSeller = async (req, res, next) => {
 		} else {
 			const admin = await User.findOne({ role: 'admin' });
 			existUser.Balance -= 5000;
-			existUser.totalPayment -= 5000;
+			existUser.totalPayment += 5000;
 			admin.Balance += 5000;
 			admin.totalIncome += 5000;
 			existUser.save();

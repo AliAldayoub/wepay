@@ -24,7 +24,12 @@ const withdrawRequestSchema = new Schema(
 				return this.processType === 'سحب-هرم' || this.processType === 'سحب-كاش';
 			}
 		},
-		reciverCity: { type: String, required: true },
+		reciverCity: {
+			type: String,
+			required: function() {
+				return this.processType === 'سحب-هرم';
+			}
+		},
 		activity: { type: Schema.Types.ObjectId, ref: 'Activity', required: true }
 	},
 	{
