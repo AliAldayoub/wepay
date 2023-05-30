@@ -7,6 +7,7 @@ const mongoose = require('mongoose');
 const bcrypt = require('bcryptjs');
 const { uploadImage } = require('../util/backblazeB2');
 const Payment = require('../models/payment');
+const session = mongoose.startSession();
 
 exports.getShipping = async (req, res, next) => {
 	try {
