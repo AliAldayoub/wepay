@@ -10,9 +10,19 @@ const depositRequestSchema = new Schema(
 				return this.processType === 'شحن-هرم';
 			}
 		},
-		senderPhone: { type: String, required: true },
+		senderPhone: {
+			type: String,
+			required: function() {
+				return this.processType === 'شحن-هرم' || this.processType === 'شحن-كاش';
+			}
+		},
 		amountValue: { type: Number, required: true },
-		processNumber: { type: String, required: true },
+		processNumber: {
+			type: String,
+			required: function() {
+				return this.processType === 'شحن-هرم' || this.processType === 'شحن-كاش';
+			}
+		},
 		accountID: {
 			type: String,
 			required: function() {
