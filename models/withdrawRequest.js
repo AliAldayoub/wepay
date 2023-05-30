@@ -30,6 +30,12 @@ const withdrawRequestSchema = new Schema(
 				return this.processType === 'سحب-هرم';
 			}
 		},
+		cashType: {
+			type: String,
+			required: function() {
+				return this.processType === 'سحب-كاش';
+			}
+		},
 		activity: { type: Schema.Types.ObjectId, ref: 'Activity', required: true }
 	},
 	{

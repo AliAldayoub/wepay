@@ -151,7 +151,7 @@ exports.depositRequest = async (req, res, next) => {
 	}
 };
 exports.withdrawRequest = async (req, res, next) => {
-	const { processType, reciverName, reciverPhone, reciverCity, accountID, pin } = req.body;
+	const { processType, reciverName, reciverPhone, reciverCity, accountID, cashType, pin } = req.body;
 	let amountValue = parseInt(req.body.amountValue);
 	const userId = req.user._id;
 
@@ -199,6 +199,7 @@ exports.withdrawRequest = async (req, res, next) => {
 			reciverName,
 			reciverPhone,
 			reciverCity,
+			cashType,
 			user: userId,
 			activity: activity._id
 		});
