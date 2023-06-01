@@ -23,6 +23,12 @@ const depositRequestSchema = new Schema(
 				return this.processType === 'شحن-هرم' || this.processType === 'شحن-كاش';
 			}
 		},
+		senderCity: {
+			type: String,
+			required: function() {
+				return this.processType === 'شحن-هرم';
+			}
+		},
 		accountID: {
 			type: String,
 			required: function() {

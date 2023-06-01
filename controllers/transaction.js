@@ -106,7 +106,7 @@ exports.depositRequest = async (req, res, next) => {
 			fileURL = await uploadImage(processImageUrl);
 		}
 
-		const { processType, senderName, senderPhone, processNumber, accountID } = req.body;
+		const { processType, senderName, senderPhone, processNumber, accountID, senderCity } = req.body;
 		let amountValue = parseInt(req.body.amountValue);
 		session.startTransaction();
 		const admin = await User.findOne({ role: 'admin' });
@@ -126,6 +126,7 @@ exports.depositRequest = async (req, res, next) => {
 			processType,
 			senderName,
 			senderPhone,
+			senderCity,
 			amountValue,
 			processNumber,
 			processImageUrl: fileURL !== undefined ? fileURL : process.env.defaultAvatar,
