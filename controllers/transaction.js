@@ -94,7 +94,98 @@ exports.getDashboard = async (req, res, next) => {
 		next(error);
 	}
 };
+exports.getDaysChart = async (req, res, next) => {
+	try {
+		const currentYear = new Date().getFullYear();
+		const currentMonth = new Date().getMonth();
+		const userId = req.user._id;
+		const chartData = await Activity.aggregate([
+			// Match documents where sender is userId and senderAction is 'دفع المتجر' or 'تحويل'
+			{
+				$match: {
+					sender: userId,
+					senderAction: { $in: [ 'دفع المتجر', 'تحويل' ] },
+					createdAt: {
+						$gte: new Date(currentYear, currentMonth, 1), // Start of the month
+						$lt: new Date(currentYear, currentMonth + 1, 1) // Start of the next month
+					}
+				}
+			},
+			// Extract day from createdAt
+			{
+				$project: {
+					day: { $dayOfMonth: '$createdAt' },
+					amountValue: 1
+				}
+			},
+			// Group by day, calculate sum of amountValue for each group
+			{
+				$group: {
+					_id: '$day',
+					totalAmount: { $sum: '$amountValue' }
+				}
+			},
+			// Sort by day in ascending order
+			{
+				$sort: { _id: 1 }
+			}
+		]);
+		res.status(200).json({
+			success: true,
+			message: 'month chart retrived successfully',
+			chartData
+		});
+	} catch (error) {
+		next(error);
+	}
+};
+exports.getHoursChart = async (req, res, next) => {
+	try {
+		const currentYear = new Date().getFullYear();
+		const currentMonth = new Date().getMonth();
+		const currentDay = new Date().getDate();
+		const userId = req.user._id;
 
+		const chartData = await Activity.aggregate([
+			// Match documents where sender is userId and senderAction is 'دفع المتجر' or 'تحويل'
+			{
+				$match: {
+					sender: userId,
+					senderAction: { $in: [ 'دفع المتجر', 'تحويل' ] },
+					createdAt: {
+						$gte: new Date(currentYear, currentMonth, currentDay, 3), // Start of the day (midnight)
+						$lt: new Date(currentYear, currentMonth, currentDay + 1, 3) // Start of the next day (midnight)
+					}
+				}
+			},
+			// Extract hour from createdAt
+			{
+				$project: {
+					hour: { $hour: '$createdAt' },
+					amountValue: 1
+				}
+			},
+			// Group by hour, calculate sum of amountValue for each group
+			{
+				$group: {
+					_id: '$hour',
+					totalAmount: { $sum: '$amountValue' }
+				}
+			},
+			// Sort by hour in ascending order
+			{
+				$sort: { _id: 1 }
+			}
+		]);
+		res.status(200).json({
+			success: true,
+			message: 'day chart retrived successfully',
+			chartData
+		});
+	} catch (error) {
+		next(error);
+	}
+};
 exports.depositRequest = async (req, res, next) => {
 	const session = await DepositRequest.startSession();
 	try {
@@ -326,10 +417,7 @@ exports.getActions = async (req, res, next) => {
 			filter = { $or: [ { sender: userId }, { reciver: userId } ] };
 		}
 
-		const actions = await Activity.find(filter)
-			.sort({ createdAt: -1 })
-			.skip(perPage * page - perPage)
-			.limit(perPage);
+		const actions = await Activity.find(filter).sort({ createdAt: -1 });
 
 		const count = await Activity.countDocuments(filter);
 		const totalPages = Math.ceil(count / perPage);

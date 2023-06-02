@@ -10,6 +10,8 @@ const upload = multer({ storage: storage });
 router.get('/getShipping', authMiddleware.authenticateUser, transactionController.getShipping);
 
 router.get('/getDashboard', authMiddleware.authenticateUser, transactionController.getDashboard);
+router.get('/getDaysChart', authMiddleware.authenticateUser, transactionController.getDaysChart);
+router.get('/getHoursChart', authMiddleware.authenticateUser, transactionController.getHoursChart);
 
 router.post(
 	'/depositRequest',
