@@ -58,7 +58,7 @@ exports.getDashboard = async (req, res, next) => {
 			{
 				$match: {
 					sender: userId,
-					senderAction: { $in: [ 'دفع المتجر', 'تحويل', 'سحب' ] },
+					senderAction: { $in: [ 'دفع المتجر', 'تحويل' ] },
 					createdAt: {
 						$gte: new Date('2023-01-01'),
 						$lt: new Date('2024-01-01')

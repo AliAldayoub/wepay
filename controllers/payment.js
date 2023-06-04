@@ -22,7 +22,7 @@ exports.addPayment = async (req, res, next) => {
 			paymentForUser = await User.findOne({ qrcode: paymentForCode });
 			if (!paymentForUser)
 				return res
-					.status(400)
+					.status(200)
 					.json({ success: false, message: ' هذا الرمز غير موجود يرجى التأكد من صحة الرمز' });
 		} else {
 			paymentForUser = undefined;
@@ -30,7 +30,7 @@ exports.addPayment = async (req, res, next) => {
 		if (paymentForUser !== undefined) {
 			if (paymentType === 'دين لمتجر' && paymentForUser.role === 0) {
 				return res
-					.status(400)
+					.status(200)
 					.json({ success: false, message: 'صاحب هذا الرمز ليس تاجر يرجى التأكد من صحة الرمز' });
 			} else paymentForUser = paymentForUser._id;
 		}
@@ -59,7 +59,7 @@ exports.getAllPayments = async (req, res, next) => {
 		const page = req.query.page || 1;
 		const count = await Payment.countDocuments({ user: userId });
 		if (count == 0) {
-			res.status(400).json({ message: 'لا يوجد أي مدفوعات لعرضها' });
+			res.status(200).json({ message: 'لا يوجد أي مدفوعات لعرضها' });
 		} else {
 			const allPayments = await Payment.find({ user: userId })
 				.populate('user', 'firstName lastName')
@@ -95,7 +95,7 @@ exports.deletePayment = async (req, res, next) => {
 		});
 
 		if (!payment) {
-			return res.status(404).json({ success: false, message: 'Payment not found or unauthorized' });
+			return res.status(200).json({ success: false, message: 'Payment not found or unauthorized' });
 		}
 
 		return res.status(200).json({
