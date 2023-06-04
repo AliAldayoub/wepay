@@ -9,7 +9,7 @@ exports.getAllDealers = async (req, res, next) => {
 		if (count == 0) {
 			res.status(200).json({ message: 'no dealer in site for now' });
 		} else {
-			const dealers = await Dealer.find();
+			const dealers = await Dealer.find().sort({ createdAt: 1 });
 			const totalPages = Math.ceil(count / perPage);
 
 			res.status(201).json({

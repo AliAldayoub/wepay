@@ -16,6 +16,10 @@ const paymentSchema = new Schema(
 			required: function() {
 				return this.isPayable === 1;
 			}
+		},
+		paidStatus: {
+			type: Boolean,
+			default: false
 		}
 	},
 	{

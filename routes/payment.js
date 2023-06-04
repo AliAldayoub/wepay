@@ -6,4 +6,5 @@ const paymentController = require('../controllers/payment');
 router.post('/addPayment', authMiddleware.authenticateUser, paymentController.addPayment);
 router.get('/getAllPayments', authMiddleware.authenticateUser, paymentController.getAllPayments);
 router.delete('/deletePayment/:id', authMiddleware.authenticateUser, paymentController.deletePayment);
+router.put('/payNow/:id', authMiddleware.authenticateUser, paymentController.payNow);
 module.exports = router;

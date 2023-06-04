@@ -1,5 +1,7 @@
 const Payment = require('../models/payment');
 const User = require('../models/user');
+const Activity = require('../models/activity');
+const { getLastPayment } = require('./transaction');
 
 exports.addPayment = async (req, res, next) => {
 	try {
@@ -46,7 +48,8 @@ exports.addPayment = async (req, res, next) => {
 			paymentForUser: paymentForUser
 		});
 		await payment.save();
-		return res.status(201).json({ success: true, message: 'payment added', data: payment });
+		const lastPayments = getLastPayment(userId);
+		return res.status(201).json({ success: true, message: 'payment added', data: payment, lastPayments });
 	} catch (error) {
 		next(error);
 	}
@@ -63,9 +66,7 @@ exports.getAllPayments = async (req, res, next) => {
 		} else {
 			const allPayments = await Payment.find({ user: userId })
 				.populate('user', 'firstName lastName')
-				.populate('paymentForUser', 'firstName lastName qrcode')
-				.sort({ paymentDate: -1 });
-
+				.populate('paymentForUser', 'firstName lastName qrcode');
 			const totalPages = Math.ceil(count / perPage);
 
 			return res.status(200).json({
@@ -95,12 +96,57 @@ exports.deletePayment = async (req, res, next) => {
 		if (!payment) {
 			return res.status(404).json({ success: false, message: 'Payment not found or unauthorized' });
 		}
+		const lastPayments = getLastPayment(userId);
 
 		return res.status(200).json({
 			success: true,
 			message: 'Payment deleted successfully',
-			data: payment
+			data: payment,
+			lastPayments
 		});
+	} catch (error) {
+		next(error);
+	}
+};
+exports.payNow = async (req, res, next) => {
+	try {
+		const userId = req.user._id;
+		const paymentId = req.params.id;
+		const user = await User.findById(userId);
+		const payment = await Payment.findById(paymentId);
+
+		if (user.Balance < payment.amountValue) {
+			return res.status(400).json({ success: false, message: 'عذراً,رصيدك لا يكفي لإجراء هذه العملية' });
+		}
+		//later if we need to check if the date is too late we should check the date and check if the user need to do it or want to delete the payment
+		const reciverUser = await User.findById(payment.paymentForUser);
+
+		user.Balance -= payment.amountValue;
+		user.totalPayment += payment.amountValue;
+
+		reciverUser.Balance += payment.amountValue;
+		reciverUser.totalIncome += payment.amountValue;
+
+		const activity = new Activity({
+			sender: userId,
+			reciver: reciverUser._id,
+			senderAction: 'تحويل',
+			reciverAction: 'استلام رصيد',
+			senderDetails: `سداد ${payment.paymentType} لحساب ${reciverUser.firstName} ${reciverUser.lastName}`,
+			reciverDetails: `استوفاء ${payment.paymentType} من  ${reciverUser.firstName} ${reciverUser.lastName}`,
+			amountValue: payment.amountValue,
+			status: true
+		});
+		await activity.save();
+
+		payment.paidStatus = true;
+		payment.amountValue = 0;
+
+		await user.save();
+		await reciverUser.save();
+		await payment.save();
+
+		res.status(200).json({ message: 'تم الدفع بنجاح وخصم المبلغ من رصيد حسابك', activity, payment });
 	} catch (error) {
 		next(error);
 	}
