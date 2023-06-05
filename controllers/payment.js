@@ -39,8 +39,8 @@ exports.addPayment = async (req, res, next) => {
 		let monthlyPaymentAmount;
 		if (paymentType === 'قسط شهري' && isMonthlyPayable === 1) {
 			monthsDiff =
-				(paymentDate.getFullYear() - currentDate.getFullYear()) * 12 +
-				(paymentDate.getMonth() - currentDate.getMonth());
+				(actDate.getFullYear() - currentDate.getFullYear()) * 12 +
+				(actDate.getMonth() - currentDate.getMonth());
 
 			monthlyPaymentAmount = paymentValue / monthsDiff;
 			if (monthsDiff < 2) {
@@ -154,6 +154,7 @@ exports.deletePayment = async (req, res, next) => {
 		next(error);
 	}
 };
+
 exports.payNow = async (req, res, next) => {
 	try {
 		const userId = req.user._id;

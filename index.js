@@ -35,6 +35,7 @@ app.get('/', (req, res, next) => {
 	res.send('hello from we pay');
 });
 
+require('./util/paymentScheduler');
 app.use(ErrorHandler);
 db.on('error', console.error.bind(console, 'connection error : '));
 db.once('open', () => {
