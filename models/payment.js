@@ -20,6 +20,18 @@ const paymentSchema = new Schema(
 		paidStatus: {
 			type: Boolean,
 			default: false
+		},
+		numberOfMonthsLeft: {
+			type: Number,
+			required: function() {
+				return this.isMonthlyPayable === 1;
+			}
+		},
+		monthlyValue: {
+			type: Number,
+			required: function() {
+				return this.isMonthlyPayable === 1;
+			}
 		}
 	},
 	{

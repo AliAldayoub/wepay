@@ -16,9 +16,7 @@ exports.addPayment = async (req, res, next) => {
 		} = req.body;
 		const user = await User.findById(userId);
 		let paymentForUser;
-		// if (paymentType === 'قسط شهري') {
-		// 	//اذا دخل انو قسط شهري بالفرونت رح ياخدو الموعد يلي دخلو ويطلعو اليوم ويحسبو قدي باقي ويعرصوه  في حال كان قابل للدفع بيظهر زر ادفع الان  اذا لا ما بيظهر
-		// }
+
 		if (isPayable === 1) {
 			paymentForUser = await User.findOne({ qrcode: paymentForCode });
 			if (!paymentForUser)
@@ -29,13 +27,28 @@ exports.addPayment = async (req, res, next) => {
 			paymentForUser = undefined;
 		}
 		if (paymentForUser !== undefined) {
-			if (paymentType === 'دين لمتجر' && paymentForUser.role === 0) {
+			if (paymentType === 'دين لمتجر' && paymentForUser.role === 'user') {
 				return res
 					.status(400)
 					.json({ success: false, message: 'صاحب هذا الرمز ليس تاجر يرجى التأكد من صحة الرمز' });
 			} else paymentForUser = paymentForUser._id;
 		}
+		const currentDate = new Date();
 		let actDate = paymentDate ? new Date(paymentDate) : undefined;
+		let monthsDiff;
+		let monthlyPaymentAmount;
+		if (paymentType === 'قسط شهري' && isMonthlyPayable === 1) {
+			monthsDiff =
+				(paymentDate.getFullYear() - currentDate.getFullYear()) * 12 +
+				(paymentDate.getMonth() - currentDate.getMonth());
+
+			monthlyPaymentAmount = paymentValue / monthsDiff;
+			if (monthsDiff < 2) {
+				return res
+					.status(400)
+					.json({ message: 'لا يمكنك اختيار قسط شهري في حال كان التاريخ المحدد لا يتجاوز شهرين ' });
+			}
+		}
 		const payment = new Payment({
 			paymentType,
 			paymentValue,
@@ -43,6 +56,8 @@ exports.addPayment = async (req, res, next) => {
 			paymentInfo,
 			isPayable,
 			isMonthlyPayable,
+			numberOfMonthsLeft: monthsDiff,
+			monthlyValue: monthlyPaymentAmount,
 			user: user._id,
 			paymentForUser: paymentForUser
 		});
@@ -75,12 +90,28 @@ exports.getAllPayments = async (req, res, next) => {
 				.populate('user', 'firstName lastName')
 				.populate('paymentForUser', 'firstName lastName qrcode')
 				.sort({ createdAt: -1 });
+
+			const updatedPayments = allPayments.map((payment) => {
+				if (payment.isMonthlyPayable === 1) {
+					const currentDate = new Date();
+					const nextMonthDate = new Date(
+						currentDate.getFullYear(),
+						currentDate.getMonth() + 1,
+						payment.paymentDate.getDate()
+					);
+					const timeDiff = nextMonthDate - currentDate;
+					const daysDiff = Math.ceil(timeDiff / (24 * 60 * 60 * 1000));
+					return { ...payment._doc, daysDiff };
+				}
+				return payment;
+			});
+
 			const totalPages = Math.ceil(count / perPage);
 
 			return res.status(200).json({
 				success: true,
 				message: 'All payments retrieved successfully',
-				data: allPayments,
+				data: updatedPayments,
 				currentPage: page,
 				totalPages: totalPages,
 				totalItems: count
@@ -129,19 +160,31 @@ exports.payNow = async (req, res, next) => {
 		const paymentId = req.params.id;
 		const user = await User.findById(userId);
 		const payment = await Payment.findById(paymentId);
-
-		if (user.Balance < payment.amountValue) {
-			return res.status(400).json({ success: false, message: 'عذراً,رصيدك لا يكفي لإجراء هذه العملية' });
-		}
-		//later if we need to check if the date is too late we should check the date and check if the user need to do it or want to delete the payment
 		const reciverUser = await User.findById(payment.paymentForUser);
+		if (payment.isMonthlyPayable === 1) {
+			if (user.Balance < payment.monthlyValue) {
+				return res.status(400).json({ success: false, message: 'عذراً,رصيدك لا يكفي لإجراء هذه العملية' });
+			}
 
-		user.Balance -= payment.amountValue;
-		user.totalPayment += payment.amountValue;
+			user.Balance -= payment.monthlyValue;
+			user.totalPayment += payment.monthlyValue;
 
-		reciverUser.Balance += payment.amountValue;
-		reciverUser.totalIncome += payment.amountValue;
+			reciverUser.Balance += payment.monthlyValue;
+			reciverUser.totalIncome += payment.monthlyValue;
 
+			payment.numberOfMonthsLeft -= 1;
+		} else {
+			if (user.Balance < payment.paymentValue) {
+				return res.status(400).json({ success: false, message: 'عذراً,رصيدك لا يكفي لإجراء هذه العملية' });
+			}
+			//later if we need to check if the date is too late we should check the date and check if the user need to do it or want to delete the payment
+
+			user.Balance -= payment.paymentValue;
+			user.totalPayment += payment.paymentValue;
+
+			reciverUser.Balance += payment.paymentValue;
+			reciverUser.totalIncome += payment.paymentValue;
+		}
 		const activity = new Activity({
 			sender: userId,
 			reciver: reciverUser._id,
@@ -149,19 +192,51 @@ exports.payNow = async (req, res, next) => {
 			reciverAction: 'استلام رصيد',
 			senderDetails: `سداد ${payment.paymentType} لحساب ${reciverUser.firstName} ${reciverUser.lastName}`,
 			reciverDetails: `استوفاء ${payment.paymentType} من  ${reciverUser.firstName} ${reciverUser.lastName}`,
-			amountValue: payment.amountValue,
+			paymentValue: payment.paymentValue,
 			status: true
 		});
 		await activity.save();
 
 		payment.paidStatus = true;
-		payment.amountValue = 0;
+		payment.isMonthlyPayable === 1 ? (payment.paymentValue -= payment.monthlyValue) : (payment.paymentValue = 0);
 
 		await user.save();
 		await reciverUser.save();
 		await payment.save();
-
-		res.status(200).json({ message: 'تم الدفع بنجاح وخصم المبلغ من رصيد حسابك', activity, payment });
+		const chartData = await Activity.aggregate([
+			{
+				$match: {
+					sender: userId,
+					senderAction: { $in: [ 'دفع المتجر', 'تحويل' ] },
+					createdAt: {
+						$gte: new Date('2023-01-01'),
+						$lt: new Date('2024-01-01')
+					}
+				}
+			},
+			{
+				$project: {
+					month: { $month: '$createdAt' },
+					amountValue: 1
+				}
+			},
+			{
+				$group: {
+					_id: '$month',
+					totalAmount: { $sum: '$amountValue' }
+				}
+			},
+			{
+				$sort: { _id: 1 }
+			}
+		]);
+		res.status(200).json({
+			message: 'تم الدفع بنجاح وخصم المبلغ من رصيد حسابك',
+			activity,
+			payment,
+			user,
+			chartData
+		});
 	} catch (error) {
 		next(error);
 	}
