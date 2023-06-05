@@ -8,18 +8,6 @@ const bcrypt = require('bcryptjs');
 const { uploadImage } = require('../util/backblazeB2');
 const Payment = require('../models/payment');
 
-async function getLastPayment(userId) {
-	const countPayment = await Payment.countDocuments({ user: userId });
-	let lastPayments;
-	if (countPayment !== 0) {
-		lastPayments = await Payment.find({ user: userId })
-			.populate('user', 'firstName lastName')
-			.populate('paymentForUser', 'firstName lastName qrcode')
-			.sort({ paymentDate: 1 })
-			.limit(3);
-	}
-	return lastPayments;
-}
 exports.getShipping = async (req, res, next) => {
 	try {
 		const userId = req.user._id;
@@ -57,7 +45,15 @@ exports.getDashboard = async (req, res, next) => {
 			// when you need to fetch the data from lastActivities first check the senderAction if is in [ 'دفع المتجر', 'تحويل', 'سحب' ] use the senderDetails else use reciverDetails
 		}
 
-		const lastPayments = getLastPayment(userId);
+		const countPayment = await Payment.countDocuments({ user: userId });
+		let lastPayments;
+		if (countPayment !== 0) {
+			lastPayments = await Payment.find({ user: userId })
+				.populate('user', 'firstName lastName')
+				.populate('paymentForUser', 'firstName lastName qrcode')
+				.sort({ paymentDate: 1 })
+				.limit(3);
+		}
 		// retrive chart information ....
 		const chartData = await Activity.aggregate([
 			{

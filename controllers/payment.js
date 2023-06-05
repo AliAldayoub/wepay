@@ -1,7 +1,6 @@
 const Payment = require('../models/payment');
 const User = require('../models/user');
 const Activity = require('../models/activity');
-const { getLastPayment } = require('./transaction');
 
 exports.addPayment = async (req, res, next) => {
 	try {
@@ -48,7 +47,15 @@ exports.addPayment = async (req, res, next) => {
 			paymentForUser: paymentForUser
 		});
 		await payment.save();
-		const lastPayments = getLastPayment(userId);
+		const countPayment = await Payment.countDocuments({ user: userId });
+		let lastPayments;
+		if (countPayment !== 0) {
+			lastPayments = await Payment.find({ user: userId })
+				.populate('user', 'firstName lastName')
+				.populate('paymentForUser', 'firstName lastName qrcode')
+				.sort({ paymentDate: 1 })
+				.limit(3);
+		}
 		return res.status(201).json({ success: true, message: 'payment added', data: payment, lastPayments });
 	} catch (error) {
 		next(error);
@@ -66,7 +73,8 @@ exports.getAllPayments = async (req, res, next) => {
 		} else {
 			const allPayments = await Payment.find({ user: userId })
 				.populate('user', 'firstName lastName')
-				.populate('paymentForUser', 'firstName lastName qrcode');
+				.populate('paymentForUser', 'firstName lastName qrcode')
+				.sort({ createdAt: -1 });
 			const totalPages = Math.ceil(count / perPage);
 
 			return res.status(200).json({
@@ -96,8 +104,15 @@ exports.deletePayment = async (req, res, next) => {
 		if (!payment) {
 			return res.status(404).json({ success: false, message: 'Payment not found or unauthorized' });
 		}
-		const lastPayments = getLastPayment(userId);
-
+		const countPayment = await Payment.countDocuments({ user: userId });
+		let lastPayments;
+		if (countPayment !== 0) {
+			lastPayments = await Payment.find({ user: userId })
+				.populate('user', 'firstName lastName')
+				.populate('paymentForUser', 'firstName lastName qrcode')
+				.sort({ paymentDate: 1 })
+				.limit(3);
+		}
 		return res.status(200).json({
 			success: true,
 			message: 'Payment deleted successfully',
