@@ -37,7 +37,7 @@ exports.addPayment = async (req, res, next) => {
 		let actDate = paymentDate ? new Date(paymentDate) : undefined;
 		let monthsDiff;
 		let monthlyPaymentAmount;
-		if (paymentType === 'قسط شهري' && isMonthlyPayable === 1) {
+		if (paymentType === 'قسط شهري' || isMonthlyPayable === 1) {
 			monthsDiff =
 				(actDate.getFullYear() - currentDate.getFullYear()) * 12 +
 				(actDate.getMonth() - currentDate.getMonth());

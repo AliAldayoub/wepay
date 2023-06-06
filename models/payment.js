@@ -24,13 +24,13 @@ const paymentSchema = new Schema(
 		numberOfMonthsLeft: {
 			type: Number,
 			required: function() {
-				return this.isMonthlyPayable === 1;
+				return this.isMonthlyPayable === 1 || this.paymentType === 'قسط شهري';
 			}
 		},
 		monthlyValue: {
 			type: Number,
 			required: function() {
-				return this.isMonthlyPayable === 1;
+				return this.isMonthlyPayable === 1 || this.paymentType === 'قسط شهري';
 			}
 		}
 	},
