@@ -49,7 +49,7 @@ exports.addPayment = async (req, res, next) => {
 					.json({ message: 'لا يمكنك اختيار قسط شهري في حال كان التاريخ المحدد لا يتجاوز شهرين ' });
 			}
 		}
-		const payment = new Payment({
+		let payment = new Payment({
 			paymentType,
 			paymentValue,
 			paymentDate: actDate,
@@ -62,6 +62,17 @@ exports.addPayment = async (req, res, next) => {
 			paymentForUser: paymentForUser
 		});
 		await payment.save();
+		if (payment.isMonthlyPayable === 1 || payment.paymentType === 'قسط شهري') {
+			const currentDate = new Date();
+			const nextMonthDate = new Date(
+				currentDate.getFullYear(),
+				currentDate.getMonth() + 1,
+				payment.paymentDate.getDate()
+			);
+			const timeDiff = nextMonthDate - currentDate;
+			const daysDiff = Math.ceil(timeDiff / (24 * 60 * 60 * 1000));
+			payment = { ...payment._doc, daysDiff };
+		}
 		const countPayment = await Payment.countDocuments({ user: userId });
 		let lastPayments;
 		if (countPayment !== 0) {
