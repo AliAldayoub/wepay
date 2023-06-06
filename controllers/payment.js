@@ -42,7 +42,7 @@ exports.addPayment = async (req, res, next) => {
 				(actDate.getFullYear() - currentDate.getFullYear()) * 12 +
 				(actDate.getMonth() - currentDate.getMonth());
 
-			monthlyPaymentAmount = paymentValue / monthsDiff;
+			monthlyPaymentAmount = Math.ceil(paymentValue / monthsDiff);
 			if (monthsDiff < 2) {
 				return res
 					.status(400)
@@ -227,7 +227,7 @@ exports.payNow = async (req, res, next) => {
 			reciverAction: 'استلام رصيد',
 			senderDetails: `سداد ${payment.paymentType} لحساب ${reciverUser.firstName} ${reciverUser.lastName}`,
 			reciverDetails: `استوفاء ${payment.paymentType} من  ${reciverUser.firstName} ${reciverUser.lastName}`,
-			amountValue: payment.paymentValue,
+			amountValue: payment.isMonthlyPayable === 1 ? payment.monthlyValue : payment.paymentValue,
 			status: true
 		});
 		await activity.save();
