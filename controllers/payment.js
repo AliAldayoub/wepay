@@ -111,7 +111,7 @@ exports.getAllPayments = async (req, res, next) => {
 				.populate('paymentForUser', 'firstName lastName qrcode')
 				.sort({ createdAt: -1 });
 
-			const updatedPayments = lastPayments.map((payment) => {
+			const updatedPayments = allPayments.map((payment) => {
 				if (payment.isMonthlyPayable === 1 || payment.paymentType === 'قسط شهري') {
 					const currentDate = new Date();
 					const nextMonthDate = new Date(
