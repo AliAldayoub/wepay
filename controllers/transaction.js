@@ -47,27 +47,29 @@ exports.getDashboard = async (req, res, next) => {
 
 		const countPayment = await Payment.countDocuments({ user: userId });
 		let lastPayments;
+		let updatedPayments;
 		if (countPayment !== 0) {
 			lastPayments = await Payment.find({ user: userId })
 				.populate('user', 'firstName lastName')
 				.populate('paymentForUser', 'firstName lastName qrcode')
 				.sort({ paymentDate: 1 })
 				.limit(3);
+			updatedPayments = lastPayments.map((payment) => {
+				if (payment.isMonthlyPayable === 1 || payment.paymentType === 'قسط شهري') {
+					const currentDate = new Date();
+					const nextMonthDate = new Date(
+						currentDate.getFullYear(),
+						currentDate.getMonth() + 1,
+						payment.paymentDate.getDate()
+					);
+					const timeDiff = nextMonthDate - currentDate;
+					const daysDiff = Math.ceil(timeDiff / (24 * 60 * 60 * 1000));
+					return { ...payment._doc, daysDiff };
+				}
+				return payment;
+			});
 		}
-		const updatedPayments = lastPayments.map((payment) => {
-			if (payment.isMonthlyPayable === 1 || payment.paymentType === 'قسط شهري') {
-				const currentDate = new Date();
-				const nextMonthDate = new Date(
-					currentDate.getFullYear(),
-					currentDate.getMonth() + 1,
-					payment.paymentDate.getDate()
-				);
-				const timeDiff = nextMonthDate - currentDate;
-				const daysDiff = Math.ceil(timeDiff / (24 * 60 * 60 * 1000));
-				return { ...payment._doc, daysDiff };
-			}
-			return payment;
-		});
+
 		// retrive chart information ....
 		const chartData = await Activity.aggregate([
 			{
