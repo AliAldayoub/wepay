@@ -71,7 +71,27 @@ exports.addPayment = async (req, res, next) => {
 				.sort({ paymentDate: 1 })
 				.limit(3);
 		}
-		return res.status(201).json({ success: true, message: 'payment added', data: payment, lastPayments });
+		const updatedPayments = lastPayments.map((payment) => {
+			if (payment.isMonthlyPayable === 1) {
+				const currentDate = new Date();
+				const nextMonthDate = new Date(
+					currentDate.getFullYear(),
+					currentDate.getMonth() + 1,
+					payment.paymentDate.getDate()
+				);
+				const timeDiff = nextMonthDate - currentDate;
+				const daysDiff = Math.ceil(timeDiff / (24 * 60 * 60 * 1000));
+				return { ...payment._doc, daysDiff };
+			}
+			return payment;
+		});
+
+		return res.status(201).json({
+			success: true,
+			message: 'payment added',
+			data: payment,
+			lastPayments: updatedPayments
+		});
 	} catch (error) {
 		next(error);
 	}
@@ -144,11 +164,25 @@ exports.deletePayment = async (req, res, next) => {
 				.sort({ paymentDate: 1 })
 				.limit(3);
 		}
+		const updatedPayments = lastPayments.map((payment) => {
+			if (payment.isMonthlyPayable === 1) {
+				const currentDate = new Date();
+				const nextMonthDate = new Date(
+					currentDate.getFullYear(),
+					currentDate.getMonth() + 1,
+					payment.paymentDate.getDate()
+				);
+				const timeDiff = nextMonthDate - currentDate;
+				const daysDiff = Math.ceil(timeDiff / (24 * 60 * 60 * 1000));
+				return { ...payment._doc, daysDiff };
+			}
+			return payment;
+		});
 		return res.status(200).json({
 			success: true,
 			message: 'Payment deleted successfully',
 			data: payment,
-			lastPayments
+			lastPayments: updatedPayments
 		});
 	} catch (error) {
 		next(error);
@@ -193,7 +227,7 @@ exports.payNow = async (req, res, next) => {
 			reciverAction: 'استلام رصيد',
 			senderDetails: `سداد ${payment.paymentType} لحساب ${reciverUser.firstName} ${reciverUser.lastName}`,
 			reciverDetails: `استوفاء ${payment.paymentType} من  ${reciverUser.firstName} ${reciverUser.lastName}`,
-			paymentValue: payment.paymentValue,
+			amountValue: payment.paymentValue,
 			status: true
 		});
 		await activity.save();
