@@ -54,6 +54,20 @@ exports.getDashboard = async (req, res, next) => {
 				.sort({ paymentDate: 1 })
 				.limit(3);
 		}
+		const updatedPayments = lastPayments.map((payment) => {
+			if (payment.isMonthlyPayable === 1 || payment.paymentType === 'قسط شهري') {
+				const currentDate = new Date();
+				const nextMonthDate = new Date(
+					currentDate.getFullYear(),
+					currentDate.getMonth() + 1,
+					payment.paymentDate.getDate()
+				);
+				const timeDiff = nextMonthDate - currentDate;
+				const daysDiff = Math.ceil(timeDiff / (24 * 60 * 60 * 1000));
+				return { ...payment._doc, daysDiff };
+			}
+			return payment;
+		});
 		// retrive chart information ....
 		const chartData = await Activity.aggregate([
 			{
@@ -87,7 +101,7 @@ exports.getDashboard = async (req, res, next) => {
 			success: true,
 			message: 'dashboard retrived successfully',
 			lastActivities,
-			lastPayments,
+			lastPayments: updatedPayments,
 			user,
 			chartData
 		});

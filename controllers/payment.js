@@ -72,7 +72,7 @@ exports.addPayment = async (req, res, next) => {
 				.limit(3);
 		}
 		const updatedPayments = lastPayments.map((payment) => {
-			if (payment.isMonthlyPayable === 1) {
+			if (payment.isMonthlyPayable === 1 || payment.paymentType === 'قسط شهري') {
 				const currentDate = new Date();
 				const nextMonthDate = new Date(
 					currentDate.getFullYear(),
@@ -111,8 +111,8 @@ exports.getAllPayments = async (req, res, next) => {
 				.populate('paymentForUser', 'firstName lastName qrcode')
 				.sort({ createdAt: -1 });
 
-			const updatedPayments = allPayments.map((payment) => {
-				if (payment.isMonthlyPayable === 1) {
+			const updatedPayments = lastPayments.map((payment) => {
+				if (payment.isMonthlyPayable === 1 || payment.paymentType === 'قسط شهري') {
 					const currentDate = new Date();
 					const nextMonthDate = new Date(
 						currentDate.getFullYear(),
@@ -165,7 +165,7 @@ exports.deletePayment = async (req, res, next) => {
 				.limit(3);
 		}
 		const updatedPayments = lastPayments.map((payment) => {
-			if (payment.isMonthlyPayable === 1) {
+			if (payment.isMonthlyPayable === 1 || payment.paymentType === 'قسط شهري') {
 				const currentDate = new Date();
 				const nextMonthDate = new Date(
 					currentDate.getFullYear(),
