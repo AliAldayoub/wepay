@@ -38,4 +38,18 @@ router.put(
 	authMiddleware.authenticateAdmin,
 	transactionController.withdrawResponse
 );
+
+router.get(
+	'/getAllDepositRequest',
+	authMiddleware.authenticateUser,
+	authMiddleware.authenticateAdmin,
+	transactionController.getAllDepositRequest
+);
+
+router.get(
+	'/getAllWithdrawRequest',
+	authMiddleware.authenticateUser,
+	authMiddleware.authenticateAdmin,
+	transactionController.getAllWithdrawRequest
+);
 module.exports = router;

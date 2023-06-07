@@ -43,6 +43,6 @@ const withdrawRequestSchema = new Schema(
 	}
 );
 
-const WithdrawRequest = mongoose.model('withdrawRequest', withdrawRequestSchema);
+const WithdrawRequest = mongoose.model('WithdrawRequest', withdrawRequestSchema);
 
 module.exports = WithdrawRequest;

@@ -50,6 +50,6 @@ const depositRequestSchema = new Schema(
 	}
 );
 
-const DepositRequest = mongoose.model('depositRequest', depositRequestSchema);
+const DepositRequest = mongoose.model('DepositRequest', depositRequestSchema);
 
 module.exports = DepositRequest;

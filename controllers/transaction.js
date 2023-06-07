@@ -513,3 +513,37 @@ exports.withdrawResponse = async (req, res, next) => {
 		next(error);
 	}
 };
+exports.getAllDepositRequest = async (req, res, next) => {
+	try {
+		const user = req.user._id;
+		const count = await DepositRequest.countDocuments();
+		if (count == 0) {
+			res.status(200).json({ message: 'لا يوجد أي طلبات شحن لعرضها' });
+		} else {
+			const depositRequests = await DepositRequest.find().populate({
+				path: 'activity',
+				match: { status: false }
+			});
+			res.status(200).json({ sucess: true, message: 'تم جلب جميع طلبات الشحن', depositRequests, user });
+		}
+	} catch (error) {
+		next(error);
+	}
+};
+exports.getAllWithdrawRequest = async (req, res, next) => {
+	try {
+		const user = req.user._id;
+		const count = await WithdrawRequest.countDocuments();
+		if (count == 0) {
+			res.status(200).json({ message: 'لا يوجد أي طلبات شحن لعرضها' });
+		} else {
+			const withdrawRequest = await WithdrawRequest.find().populate({
+				path: 'activity',
+				match: { status: false }
+			});
+			res.status(200).json({ sucess: true, message: 'تم جلب جميع طلبات السحب', withdrawRequest, user });
+		}
+	} catch (error) {
+		next(error);
+	}
+};
