@@ -479,7 +479,14 @@ exports.depositResponse = async (req, res, next) => {
 
 		reciver.Balance += amountValue;
 		reciver.totalIncome += amountValue;
-
+		const actions = await Activity.find(
+			{
+				$or: [ { sender: userId, senderAction: 'تحويل' }, { sender: userId, senderAction: 'دفع المتجر' } ]
+			},
+			'-reciver -reciverDetails'
+		)
+			.sort({ createdAt: -1 })
+			.limit(5);
 		await sender.save();
 		await reciver.save();
 		await activity.save();
@@ -490,7 +497,8 @@ exports.depositResponse = async (req, res, next) => {
 			message: 'تم التحويل بنجاح وخصم المبلغ من حسابك ',
 			user: sender,
 			reciver,
-			activity
+			activity,
+			actions
 		});
 	} catch (error) {
 		await session.abortTransaction();
