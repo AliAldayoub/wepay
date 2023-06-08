@@ -524,7 +524,20 @@ exports.getAllDepositRequest = async (req, res, next) => {
 				path: 'activity',
 				match: { status: false }
 			});
-			res.status(200).json({ sucess: true, message: 'تم جلب جميع طلبات الشحن', depositRequests, user });
+
+			const filteredDepositRequests = depositRequests.filter((request) => request.activity !== null);
+			if (filteredDepositRequests.length == 0) {
+				return res.status(400).json({
+					sucess: false,
+					message: 'لا يوجد اي طلبات لعرضها'
+				});
+			}
+			res.status(200).json({
+				sucess: true,
+				message: 'تم جلب جميع طلبات الشحن',
+				depositRequests: filteredDepositRequests,
+				user
+			});
 		}
 	} catch (error) {
 		next(error);
@@ -541,7 +554,19 @@ exports.getAllWithdrawRequest = async (req, res, next) => {
 				path: 'activity',
 				match: { status: false }
 			});
-			res.status(200).json({ sucess: true, message: 'تم جلب جميع طلبات السحب', withdrawRequest, user });
+			const filteredWithdrawRequests = withdrawRequest.filter((request) => request.activity !== null);
+			if (filteredWithdrawRequests.length == 0) {
+				return res.status(400).json({
+					sucess: false,
+					message: 'لا يوجد اي طلبات لعرضها'
+				});
+			}
+			res.status(200).json({
+				sucess: true,
+				message: 'تم جلب جميع طلبات السحب',
+				withdrawRequest: filteredWithdrawRequests,
+				user
+			});
 		}
 	} catch (error) {
 		next(error);
