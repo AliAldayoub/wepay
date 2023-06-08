@@ -502,8 +502,8 @@ exports.depositResponse = async (req, res, next) => {
 exports.withdrawResponse = async (req, res, next) => {
 	try {
 		const processId = req.params.id;
-		const withDrawRequest = await WithdrawRequest.findById(processId).session(session);
-		const activity = await Activity.findOne(withDrawRequest.activity).session();
+		const withDrawRequest = await WithdrawRequest.findById(processId)
+		const activity = await Activity.findOne(withDrawRequest.activity)
 
 		activity.status = true;
 		await activity.save();
