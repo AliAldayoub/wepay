@@ -76,6 +76,7 @@ exports.getDashboard = async (req, res, next) => {
 				$match: {
 					sender: userId,
 					senderAction: { $in: [ 'دفع المتجر', 'تحويل' ] },
+					status: true,
 					createdAt: {
 						$gte: new Date('2023-01-01'),
 						$lt: new Date('2024-01-01')
@@ -122,6 +123,7 @@ exports.getDaysChart = async (req, res, next) => {
 				$match: {
 					sender: userId,
 					senderAction: { $in: [ 'دفع المتجر', 'تحويل' ] },
+					status: true,
 					createdAt: {
 						$gte: new Date(currentYear, currentMonth, 1), // Start of the month
 						$lt: new Date(currentYear, currentMonth + 1, 1) // Start of the next month
@@ -169,6 +171,7 @@ exports.getHoursChart = async (req, res, next) => {
 				$match: {
 					sender: userId,
 					senderAction: { $in: [ 'دفع المتجر', 'تحويل' ] },
+					status: true,
 					createdAt: {
 						$gte: new Date(currentYear, currentMonth, currentDay, 3), // Start of the day (midnight)
 						$lt: new Date(currentYear, currentMonth, currentDay + 1, 3) // Start of the next day (midnight)
@@ -294,7 +297,7 @@ exports.withdrawRequest = async (req, res, next) => {
 			sender: userId,
 			reciver: admin._id,
 			senderAction: 'سحب',
-			reciverAction: 'شحن',
+			reciverAction: 'استلام رصيد',
 			senderDetails: `سحب رصيد من الحساب عن طريق ${processType}`,
 			reciverDetails: `طلبية سحب رصيد عن طريق ${processType}`,
 			amountValue,
@@ -479,17 +482,18 @@ exports.depositResponse = async (req, res, next) => {
 
 		reciver.Balance += amountValue;
 		reciver.totalIncome += amountValue;
+
+		await sender.save();
+		await reciver.save();
+		await activity.save();
 		const actions = await Activity.find(
 			{
 				$or: [ { sender: userId, senderAction: 'تحويل' }, { sender: userId, senderAction: 'دفع المتجر' } ]
 			},
 			'-reciver -reciverDetails'
 		)
-			.sort({ createdAt: -1 })
+			.sort({ updatedAt: -1 })
 			.limit(5);
-		await sender.save();
-		await reciver.save();
-		await activity.save();
 		await session.commitTransaction();
 		session.endSession();
 		res.status(200).json({
@@ -535,7 +539,7 @@ exports.getAllDepositRequest = async (req, res, next) => {
 
 			const filteredDepositRequests = depositRequests.filter((request) => request.activity !== null);
 			if (filteredDepositRequests.length == 0) {
-				return res.status(400).json({
+				return res.status(200).json({
 					sucess: false,
 					message: 'لا يوجد اي طلبات لعرضها'
 				});
@@ -564,7 +568,7 @@ exports.getAllWithdrawRequest = async (req, res, next) => {
 			});
 			const filteredWithdrawRequests = withdrawRequest.filter((request) => request.activity !== null);
 			if (filteredWithdrawRequests.length == 0) {
-				return res.status(400).json({
+				return res.status(200).json({
 					sucess: false,
 					message: 'لا يوجد اي طلبات لعرضها'
 				});

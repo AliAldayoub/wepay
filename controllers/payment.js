@@ -256,6 +256,7 @@ exports.payNow = async (req, res, next) => {
 				$match: {
 					sender: userId,
 					senderAction: { $in: [ 'دفع المتجر', 'تحويل' ] },
+					status: true,
 					createdAt: {
 						$gte: new Date('2023-01-01'),
 						$lt: new Date('2024-01-01')
