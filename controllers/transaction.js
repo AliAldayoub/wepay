@@ -173,8 +173,8 @@ exports.getHoursChart = async (req, res, next) => {
 					senderAction: { $in: [ 'دفع المتجر', 'تحويل' ] },
 					status: true,
 					createdAt: {
-						$gte: new Date(currentYear, currentMonth, currentDay, 3), // Start of the day (midnight)
-						$lt: new Date(currentYear, currentMonth, currentDay + 1, 3) // Start of the next day (midnight)
+						$gte: new Date(currentYear, currentMonth, currentDay), // Start of the day (midnight)
+						$lt: new Date(currentYear, currentMonth, currentDay + 1) // Start of the next day (midnight)
 					}
 				}
 			},
