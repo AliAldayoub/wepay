@@ -145,6 +145,7 @@ exports.updateUserToSeller = async (req, res, next) => {
 	try {
 		const userId = req.user._id;
 		const { storeName, address, coo, city, storeType } = req.body;
+		console.log(coo);
 		const storeImgURL = req.file ? req.file : undefined;
 		let fileURL;
 		if (storeImgURL) {
