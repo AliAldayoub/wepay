@@ -17,7 +17,7 @@ exports.addPayment = async (req, res, next) => {
 		const user = await User.findById(userId);
 		let paymentForUser;
 
-		if (isPayable === 1) {
+		if (parseInt(isPayable) === 1) {
 			paymentForUser = await User.findOne({ qrcode: paymentForCode });
 			if (!paymentForUser)
 				return res
@@ -37,7 +37,7 @@ exports.addPayment = async (req, res, next) => {
 		let actDate = paymentDate ? new Date(paymentDate) : undefined;
 		let monthsDiff;
 		let monthlyPaymentAmount;
-		if (paymentType === 'قسط شهري' || isMonthlyPayable === 1) {
+		if (paymentType === 'قسط شهري' || parseInt(isMonthlyPayable) === 1) {
 			monthsDiff =
 				(actDate.getFullYear() - currentDate.getFullYear()) * 12 +
 				(actDate.getMonth() - currentDate.getMonth());
@@ -54,8 +54,8 @@ exports.addPayment = async (req, res, next) => {
 			paymentValue,
 			paymentDate: actDate,
 			paymentInfo,
-			isPayable,
-			isMonthlyPayable,
+			isPayable: parseInt(isPayable),
+			isMonthlyPayable: parseInt(isMonthlyPayable),
 			numberOfMonthsLeft: monthsDiff,
 			monthlyValue: monthlyPaymentAmount,
 			user: user._id,
