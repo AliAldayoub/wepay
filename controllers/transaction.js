@@ -584,3 +584,65 @@ exports.getAllWithdrawRequest = async (req, res, next) => {
 		next(error);
 	}
 };
+
+exports.payForShoppingo = async (req, res, next) => {
+	try {
+		const userId = req.user._id;
+		const codesWithPrices = JSON.parse(req.body.codesWithPrices);
+		const pin = req.body.pin;
+		const user = await user.findById(userId);
+		const isPinValid = await bcrypt.compare(pin, user.pin);
+		if (!isPinValid) {
+			return res.status(401).json({
+				success: false,
+				message: 'رمز الحماية الخاص بك غير صحيح يرجى التأكد منه'
+			});
+		}
+		let sum = 0;
+		codesWithPrices.forEach((obj) => {
+			sum += obj.price;
+		});
+		if (sum <= user.Balance) {
+			for (const codeObject of codesWithPrices) {
+				const { code, price } = codeObject;
+				const reciver = await User.findOne({ qrcode: code });
+				user.Balance -= price;
+				user.totalPayment += price;
+				reciver.Balance += price;
+				reciver.totalIncome += price;
+				const seller = await Seller.findOne({ user: reciver._id });
+				const storeName = seller.storeName;
+
+				senderAction = 'دفع المتجر';
+				reciverAction = 'استلام رصيد';
+
+				senderDetails = `دفع لمتجر ${storeName}`;
+				reciverDetails = `استلام رصيد من ${user.firstName} ${user.lastName} `;
+				const activity = new Activity({
+					sender: userId,
+					reciver: reciver._id,
+					senderAction,
+					reciverAction,
+					senderDetails,
+					reciverDetails,
+					amountValue: price,
+					status: true
+				});
+				activity.save();
+				user.save();
+				seller.save();
+			}
+			res.status(201).json({
+				success: true,
+				message: 'تم الدفع بنجاح لجميع المتاجر وخصم المبلغ من حسابك '
+			});
+		} else {
+			return res.status(400).json({
+				success: false,
+				message: 'عذراً لا تملك رصيد كاف لإتمام العملية يرجى تعبئة رصيدك والمحاولة مرة أخرى'
+			});
+		}
+	} catch (error) {
+		next(error);
+	}
+};
