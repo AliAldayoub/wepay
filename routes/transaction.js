@@ -22,6 +22,7 @@ router.post(
 router.post('/withdrawRequest', authMiddleware.authenticateUser, transactionController.withdrawRequest);
 
 router.post('/transferMoney', authMiddleware.authenticateUser, transactionController.transferMoney);
+router.post('/payForShoppingo', authMiddleware.authenticateUser, transactionController.payForShoppingo);
 
 router.get('/getActions', authMiddleware.authenticateUser, transactionController.getActions);
 
