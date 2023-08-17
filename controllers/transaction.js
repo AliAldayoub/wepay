@@ -590,7 +590,7 @@ exports.payForShoppingo = async (req, res, next) => {
 		const userId = req.user._id;
 		const codesWithPrices = JSON.parse(req.body.codesWithPrices);
 		const pin = req.body.pin;
-		const user = await user.findById(userId);
+		const user = await User.findById(userId);
 		const isPinValid = await bcrypt.compare(pin, user.pin);
 		if (!isPinValid) {
 			return res.status(401).json({
